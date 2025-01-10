@@ -1,0 +1,12 @@
+execute: build-guest
+    time cargo run --bin host-risc0 --release -- execute
+
+prove: build-guest
+    time cargo run --bin host-risc0 --release -- prove
+
+verify: build-guest
+    time cargo run --bin host-risc0 --release -- verify
+
+build-guest:
+    cd guest && \
+    cargo build --release --target riscv32im-risc0-zkvm-elf

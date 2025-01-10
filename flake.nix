@@ -21,5 +21,6 @@
     callPackage = pkgs.lib.callPackageWith pkgs;
 
   in {
+    packages.${system}.risc0 = callPackage ./zkvms/risc0/default.nix {craneLib-default = crane.mkLib pkgs;};
   };
 }

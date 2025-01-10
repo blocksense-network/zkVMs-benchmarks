@@ -1,0 +1,5 @@
+(
+vec![vec![false, false, false, false, true, false, false, true, false, false], vec![false, false, false, true, false, false, false, false, false, false], vec![false, false, false, false, false, true, false, true, false, true], vec![false, true, false, false, true, false, false, false, true, true], vec![true, false, false, true, false, false, false, true, false, true], vec![false, false, true, false, false, false, false, true, false, false], vec![false, false, false, false, false, false, false, false, true, false], vec![true, false, true, false, true, true, false, false, true, true], vec![false, false, false, true, false, false, true, true, false, false], vec![false, false, true, true, true, false, false, true, false, false]],
+3,
+vec![vec![0, 2], vec![1, 1], vec![2, 1], vec![3, 0], vec![4, 1], vec![5, 2], vec![6, 0], vec![7, 0], vec![8, 1], vec![9, 2]]
+)
