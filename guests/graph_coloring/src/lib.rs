@@ -1,7 +1,5 @@
-const VERTICES: usize = 010;
-
 #[guests_macro::proving_entrypoint]
-pub fn start(
+pub fn main(
     graph: Vec<Vec<bool>>,
     colors: u32,
     coloring: Vec<Vec<u32>>,
@@ -17,8 +15,8 @@ pub fn start(
     let mut ret = max_color + 1 == colors;
 
     // Is coloring correct?
-    for i in 0..VERTICES {
-        for j in 0..VERTICES {
+    for i in 0..graph.len() {
+        for j in 0..graph.len() {
             // graph[i][j] -> coloring[i] != coloring[j]
             ret = ret & (! graph[i][j] | (coloring[i][1] != coloring[j][1]));
         }
