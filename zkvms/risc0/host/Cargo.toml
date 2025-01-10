@@ -1,0 +1,9 @@
+[package]
+name = "host-risc0"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+risc0-zkvm = { path = "/nix/store/l1rxg23rrrdwi9cf6rc82mqavklvqc18-risc0-unstable-2024-12-21/risc0/zkvm" }
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+serde = "1.0"
