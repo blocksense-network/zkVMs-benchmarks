@@ -34,10 +34,7 @@ in
       inherit cargoArtifacts;
 
       nativeBuildInputs = [
-        just
         metacraft-labs.risc0
-        stdenv.cc
-        pkg-config
       ];
 
       postPatch = ''
@@ -52,8 +49,8 @@ in
 
       hostBin = "host-risc0";
 
-      postInstall = ''
-        ln -s "${metacraft-labs.risc0}"/bin/r0vm "$out"/bin/r0vm
+      preRun = ''
+        export PATH="\$PATH:${metacraft-labs.risc0}/bin"
       '';
 
       doCheck = false;

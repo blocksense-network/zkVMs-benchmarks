@@ -34,11 +34,20 @@
 
         installPhase = ''
           runHook preInstall
+
           mkdir -p "$out"/bin
           for bin in $(find . -type f -regex ".*release/[^/]*" -executable -print)
           do
             mv "$bin" "$out"/bin/
           done
+
+          cat <<EOF > "$out"/bin/${pname}
+          #!/usr/bin/env sh
+          ${if currentPackage ? preRun then preRun else ""}
+          "$out"/bin/${hostBin} \$@
+          EOF
+          chmod +x "$out"/bin/${pname}
+
           runHook postInstall
         '';
 
