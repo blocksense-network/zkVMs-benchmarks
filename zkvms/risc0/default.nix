@@ -4,6 +4,7 @@
   metacraft-labs,
   pkg-config,
   craneLib-default,
+  withZKVMPhases,
 }:
 let
   fs = lib.fileset;
@@ -28,7 +29,7 @@ let
   craneLib = craneLib-default.overrideToolchain metacraft-labs.risc0;
   cargoArtifacts = craneLib.buildDepsOnly commonArgs;
 in
-  craneLib.buildPackage (commonArgs
+  craneLib.buildPackage (withZKVMPhases (commonArgs
     // {
       inherit cargoArtifacts;
 
@@ -44,11 +45,16 @@ in
       '';
 
       preBuild = ''
-        INPUTS="$PWD/Vertices-010.in"
-        export INPUTS
-        cd zkvms/risc0
-        just prove
+        cd zkvms/risc0/guest
+        cargo build --release --target riscv32im-risc0-zkvm-elf
+        ln -s ../../../../zkvms/risc0/guest/target/riscv32im-risc0-zkvm-elf/release/guest ../host/src/guest
+      '';
+
+      hostBin = "host-risc0";
+
+      postInstall = ''
+        ln -s "${metacraft-labs.risc0}"/bin/r0vm "$out"/bin/r0vm
       '';
 
       doCheck = false;
-    })
+    }))

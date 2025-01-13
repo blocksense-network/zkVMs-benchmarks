@@ -1,6 +1,6 @@
 use risc0_zkvm::{default_prover, default_executor, ExecutorEnv};
 
-static HELLO_GUEST_ELF: &[u8] = include_bytes!("../../../../zkvms/risc0/guest/target/riscv32im-risc0-zkvm-elf/release/guest");
+static HELLO_GUEST_ELF: &[u8] = include_bytes!("./guest");
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
@@ -29,7 +29,7 @@ fn main() {
             let prover = default_prover();
 
             // Produce a receipt by proving the specified ELF binary.
-            let receipt = prover.prove(env, HELLO_GUEST_ELF).unwrap().receipt;
+            let receipt = prover.prove(env, HELLO_GUEST_ELF).expect("Error occured").receipt;
 
             // Extract journal of receipt
             let journal: bool = receipt.journal.decode().unwrap();
