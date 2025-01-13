@@ -1,6 +1,11 @@
 use risc0_zkvm::{default_prover, default_executor, ExecutorEnv};
+use risc0_zkp::core::digest::Digest;
+use hex::FromHex;
 
+// https://github.com/risc0/risc0/blob/881e512732eca72849b2d0e263a1242aba3158af/risc0/build/src/lib.rs#L280-L284
 static HELLO_GUEST_ELF: &[u8] = include_bytes!("./guest");
+// https://github.com/risc0/risc0/blob/881e512732eca72849b2d0e263a1242aba3158af/risc0/build/src/lib.rs#L255
+static HELLO_GUEST_ID: &str = env!("GUEST_ID");
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
@@ -37,13 +42,17 @@ fn main() {
             println!("Output from journal: {:?}", journal);
         },
         "verify" => {
+            // https://github.com/risc0/risc0/blob/881e512732eca72849b2d0e263a1242aba3158af/risc0/build/src/lib.rs#L197-L199
+            let guest_id: Digest = Digest::from_hex(HELLO_GUEST_ID).expect("");
+            // https://github.com/risc0/risc0/blob/881e512732eca72849b2d0e263a1242aba3158af/risc0/build/src/lib.rs#L278
+
             let prover = default_prover();
             let receipt = prover.prove(env, HELLO_GUEST_ELF).unwrap().receipt;
 
-            // receipt.verify(HELLO_GUEST_ID).unwrap();
+            receipt.verify(guest_id).unwrap();
 
-            // let journal: bool = receipt.journal.decode().unwrap();
-            // println!("Output from verify: {:?}", journal);
+            let journal: bool = receipt.journal.decode().unwrap();
+            println!("Output from verify: {:?}", journal);
         },
         _ => println!("No arguments provided! Expected execute, prove or verify!"),
     }
