@@ -5,6 +5,7 @@
   pkg-config,
   craneLib-default,
   withZKVMPhases,
+  fixZKVMDeps,
 }:
 let
   fs = lib.fileset;
@@ -19,15 +20,15 @@ let
           ./.
           ../../guests
           ../../guests_macro
-          ../../Cargo.lock
-          ../../Cargo.toml
           ../../Vertices-010.in
       ]);
     };
+
+    cargoLock = ./Cargo.lock;
   };
 
   craneLib = craneLib-default.overrideToolchain metacraft-labs.risc0;
-  cargoArtifacts = craneLib.buildDepsOnly commonArgs;
+  cargoArtifacts = craneLib.buildDepsOnly (fixZKVMDeps commonArgs);
 in
   craneLib.buildPackage (withZKVMPhases (commonArgs
     // {
@@ -42,9 +43,10 @@ in
       '';
 
       preBuild = ''
-        cd zkvms/risc0/guest
+        pushd ./guest
         cargo build --release --target riscv32im-risc0-zkvm-elf
         ln -s ../../../../zkvms/risc0/guest/target/riscv32im-risc0-zkvm-elf/release/guest ../host/src/guest
+        popd
 
         # Used for verification
         # https://github.com/risc0/risc0/blob/881e512732eca72849b2d0e263a1242aba3158af/risc0/build/src/lib.rs#L192-L195

@@ -22,22 +22,24 @@
 
     withZKVMPhases = currentPackage: with currentPackage; {
         buildPhase = ''
-          root_dir="$PWD"
-          runHook preBuild
-          cd "$root_dir"
-
           export INPUTS="$PWD/Vertices-010.in"
+
+          pushd zkvms/${currentPackage.pname}
+          runHook preBuild
+
           cargo build --bin ${hostBin} --release
 
           runHook postBuild
+          popd
         '';
 
         installPhase = ''
           runHook preInstall
 
           mkdir -p "$out"/bin
-          for bin in $(find . -type f -regex ".*release/[^/]*" -executable -print)
+          for bin in $(find . -type f -regex "./zkvms/.*release/[^/]*" -executable -print)
           do
+            echo "$bin"
             mv "$bin" "$out"/bin/
           done
 
@@ -54,9 +56,22 @@
         doNotPostBuildInstallCargoBinaries = true;
       } // currentPackage;
 
+    fixZKVMDeps = commonArgs: commonArgs // {
+        postUnpack = ''
+          ln -s ../../../guests ./source/zkvms/${commonArgs.pname}/guest/
+          ln -s ../../../guests_macro ./source/zkvms/${commonArgs.pname}/guest/
+          ln -s ../../Cargo.lock ./source/zkvms/${commonArgs.pname}/
+        '';
+
+        preBuild = ''
+          cd zkvms/${commonArgs.pname}
+        '';
+      };
+
     args-zkVM = {
       craneLib-default = crane.mkLib pkgs;
       inherit withZKVMPhases;
+      inherit fixZKVMDeps;
     };
   in {
     packages.${system}.risc0 = callPackage ./zkvms/risc0/default.nix args-zkVM;
