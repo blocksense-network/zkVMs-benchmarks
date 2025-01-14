@@ -1,0 +1,13 @@
+[package]
+name = "guest"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+
+[dependencies]
+sp1-zkvm = { path = "/nix/store/8g5sf8h6nfypnd736x6ns4c44s8g6qd4-sp1-unstable-2024-12-23/crates/zkvm/entrypoint" }
+alloy-sol-types = "0.7.7"
+
+zkp = { path = "./src/zkp" }
+wrapper_macro = { version = "0.1.0", path = "../wrapper_macro" }
