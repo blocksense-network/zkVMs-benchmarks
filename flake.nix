@@ -20,7 +20,20 @@
     pkgs = import nixpkgs { system = system; overlays = [ mcl-blockchain.overlays.default ]; };
     callPackage = pkgs.lib.callPackageWith pkgs;
 
-    withZKVMPhases = currentPackage: with currentPackage; {
+    fixDeps = commonArgs: commonArgs // {
+        postUnpack = ''
+          ln -s ../../../guests ./source/zkvms/${commonArgs.pname}/guest/
+          ln -s ../../../guests_macro ./source/zkvms/${commonArgs.pname}/guest/
+          ln -s ../../Cargo.lock ./source/zkvms/${commonArgs.pname}/
+        '';
+
+        preBuild = ''
+          cd zkvms/${commonArgs.pname}
+        '';
+      };
+
+
+    withCustomPhases = currentPackage: with currentPackage; {
         buildPhase = ''
           export INPUTS="$PWD/Vertices-010.in"
 
@@ -56,24 +69,18 @@
         doNotPostBuildInstallCargoBinaries = true;
       } // currentPackage;
 
-    fixZKVMDeps = commonArgs: commonArgs // {
-        postUnpack = ''
-          ln -s ../../../guests ./source/zkvms/${commonArgs.pname}/guest/
-          ln -s ../../../guests_macro ./source/zkvms/${commonArgs.pname}/guest/
-          ln -s ../../Cargo.lock ./source/zkvms/${commonArgs.pname}/
-        '';
-
-        preBuild = ''
-          cd zkvms/${commonArgs.pname}
-        '';
-      };
 
     args-zkVM = {
       craneLib-default = crane.mkLib pkgs;
-      inherit withZKVMPhases;
-      inherit fixZKVMDeps;
+      zkVM-helpers = {
+        inherit fixDeps;
+        inherit withCustomPhases;
+      };
     };
   in {
-    packages.${system}.risc0 = callPackage ./zkvms/risc0/default.nix args-zkVM;
+    packages.${system} = {
+      risc0 = callPackage ./zkvms/risc0/default.nix args-zkVM;
+      sp1 = callPackage ./zkvms/sp1/default.nix args-zkVM;
+    };
   };
 }

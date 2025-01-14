@@ -1,22 +1,19 @@
-{ stdenv,
+{ zkVM-helpers,
+  stdenv,
   lib,
   just,
   metacraft-labs,
   pkg-config,
   craneLib-default,
-  withZKVMPhases,
-  fixZKVMDeps,
 }:
 let
-  fs = lib.fileset;
-
-  commonArgs = rec {
+  commonArgs = {
     pname = "risc0";
     version = "infdev";
 
-    src = fs.toSource {
+    src = with lib.fileset; toSource {
       root = ../..;
-      fileset = fs.intersection (fs.gitTracked ../..) (fs.unions [
+      fileset = intersection (gitTracked ../..) (unions [
           ./.
           ../../guests
           ../../guests_macro
@@ -28,9 +25,9 @@ let
   };
 
   craneLib = craneLib-default.overrideToolchain metacraft-labs.risc0;
-  cargoArtifacts = craneLib.buildDepsOnly (fixZKVMDeps commonArgs);
+  cargoArtifacts = craneLib.buildDepsOnly (zkVM-helpers.fixDeps commonArgs);
 in
-  craneLib.buildPackage (withZKVMPhases (commonArgs
+  craneLib.buildPackage (zkVM-helpers.withCustomPhases (commonArgs
     // {
       inherit cargoArtifacts;
 
