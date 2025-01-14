@@ -11,3 +11,5 @@ clap = { version = "4.0", features = ["derive", "env"] }
 tracing = "0.1.40"
 hex = "0.4.3"
 alloy-sol-types = "0.7.7"
+
+zkvms_host_io = { path = "../../../zkvms_host_io" }

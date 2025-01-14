@@ -10,3 +10,5 @@ risc0-zkp = { path = "/nix/store/l1rxg23rrrdwi9cf6rc82mqavklvqc18-risc0-unstable
 hex = { version = "0.4.3", default-features = false, features = ["alloc"] }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 serde = "1.0"
+
+zkvms_host_io = { path = "../../../zkvms_host_io" }

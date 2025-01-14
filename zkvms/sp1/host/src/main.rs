@@ -1,69 +1,53 @@
-use clap::Parser;
-use sp1_sdk::{ProverClient, SP1Stdin};
+use zkvms_host_io::{read_args, RunType::{ Execute, Prove, Verify }};
+use sp1_sdk::{ProverClient, EnvProver, SP1Stdin, SP1ProofWithPublicValues, SP1VerifyingKey};
 
 /// The ELF (executable and linkable format) file for the Succinct RISC-V zkVM.
 pub const FIBONACCI_ELF: &[u8] = include_bytes!("./guest");
 
-/// The arguments for the command.
-#[derive(Parser, Debug)]
-#[clap(author, version, about, long_about = None)]
-struct Args {
-    #[clap(long)]
-    execute: bool,
+type Input = (Vec<Vec<bool>>, u32, Vec<Vec<u32>>);
 
-    #[clap(long)]
-    prove: bool,
-}
-
-fn main() {
-    // Setup the logger.
-    sp1_sdk::utils::setup_logger();
-
-    // Parse the command line arguments.
-    let args = Args::parse();
-
-    if args.execute == args.prove {
-        eprintln!("Error: You must specify either --execute or --prove");
-        std::process::exit(1);
-    }
-
-    // Setup the prover client.
-    let client = ProverClient::new();
-
-    // Setup the inputs.
+fn build_stdin((graph, colors, coloring): &Input) -> SP1Stdin {
     let mut stdin = SP1Stdin::new();
-
-    let (graph, colors, coloring): (Vec<Vec<bool>>, u32, Vec<Vec<u32>>) = include!(env!("INPUTS"));
-
     stdin.write(&graph);
     stdin.write(&colors);
     stdin.write(&coloring);
+    stdin
+}
 
-    if args.execute {
-        // Execute the program
-        let (output, report) = client.execute(FIBONACCI_ELF, &stdin).run().unwrap();
-        println!("Program executed successfully.");
+fn prove(client: &EnvProver, stdin: SP1Stdin) -> (SP1ProofWithPublicValues, SP1VerifyingKey) {
+    let (pk, vk) = client.setup(FIBONACCI_ELF);
+    let proof = client
+        .prove(&pk, &stdin)
+        .run()
+        .expect("failed to generate proof");
+    (proof, vk)
+}
 
-        // Read the output.
-        let decoded = output;
-        println!("{:?}", decoded);
+fn main() {
+    let run_info = read_args();
+    let stdin = build_stdin(&run_info.input);
 
-        // Record the number of cycles executed.
-        println!("Number of cycles: {}", report.total_instruction_count());
-    } else {
-        // Setup the program for proving.
-        let (pk, vk) = client.setup(FIBONACCI_ELF);
+    sp1_sdk::utils::setup_logger();
+    let client = ProverClient::new();
 
-        // Generate the proof
-        let proof = client
-            .prove(&pk, &stdin)
-            .run()
-            .expect("failed to generate proof");
+    match run_info.run_type {
+        Execute => {
+            let (output, report) = client.execute(FIBONACCI_ELF, &stdin).run().unwrap();
 
-        println!("Successfully generated proof!");
+            println!("Program executed successfully.");
+            println!("{:?}", output);
+            println!("Number of cycles: {}", report.total_instruction_count());
+        },
+        Prove => {
+            let _ = prove(&client, stdin);
+            println!("Successfully generated proof!");
+        },
+        Verify => {
+            let (proof, vk) = prove(&client, stdin);
+            println!("Successfully generated proof!");
 
-        // Verify the proof.
-        client.verify(&proof, &vk).expect("failed to verify proof");
-        println!("Successfully verified proof!");
+            client.verify(&proof, &vk).expect("failed to verify proof");
+            println!("Successfully verified proof!");
+        },
     }
 }

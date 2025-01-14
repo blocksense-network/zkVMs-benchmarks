@@ -17,6 +17,7 @@ let
           ./.
           ../../guests
           ../../guests_macro
+          ../../zkvms_host_io
           ../../Vertices-010.in
       ]);
     };
