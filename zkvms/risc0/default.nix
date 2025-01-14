@@ -40,17 +40,13 @@ in
       '';
 
       preBuild = ''
-        pushd ./guest
-        cargo build --release --target riscv32im-risc0-zkvm-elf
-        ln -s ../../../../zkvms/risc0/guest/target/riscv32im-risc0-zkvm-elf/release/guest ../host/src/guest
-        popd
-
         # Used for verification
         # https://github.com/risc0/risc0/blob/881e512732eca72849b2d0e263a1242aba3158af/risc0/build/src/lib.rs#L192-L195
-        export GUEST_ID="$(${metacraft-labs.risc0}/bin/r0vm --elf ../host/src/guest --id)"
+        export GUEST_ID="$(${metacraft-labs.risc0}/bin/r0vm --elf ./host/src/guest --id)"
       '';
 
       hostBin = "host-risc0";
+      guestTarget = "riscv32im-risc0-zkvm-elf";
 
       preRun = ''
         export PATH="\$PATH:${metacraft-labs.risc0}/bin"

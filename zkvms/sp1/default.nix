@@ -22,10 +22,6 @@ let
     };
 
     cargoLock = ./Cargo.lock;
-
-    preBuild = ''
-      cd zkvms/sp1
-    '';
   };
 
   craneLib = craneLib-default.overrideToolchain metacraft-labs.sp1;
@@ -43,14 +39,8 @@ in
         ln -s ../../../../guests/graph_coloring ./zkvms/sp1/guest/src/zkp
       '';
 
-      preBuild = ''
-        pushd ./guest
-        cargo build --release --target riscv32im-succinct-zkvm-elf
-        ln -s ../../../../zkvms/sp1/guest/target/riscv32im-succinct-zkvm-elf/release/guest ../host/src/guest
-        popd
-      '';
-
       hostBin = "host-sp1";
+      guestTarget = "riscv32im-succinct-zkvm-elf";
 
       doCheck = false;
     }))

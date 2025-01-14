@@ -33,11 +33,27 @@
       };
 
 
+    # Overrides build and install phases for use with zkVMs
+    # Requirements:
+    # - zkVM is inside zkvms/pname/
+    # - guest crate is located at zkvms/pname/guest and is named "guest"
     withCustomPhases = currentPackage: with currentPackage; {
+        buildGuestPhase = ''
+          pushd guest
+          runHook preBuildGuest
+
+          cargo build --release --target ${currentPackage.guestTarget}
+          ln -s ../../guest/target/${currentPackage.guestTarget}/release/guest ../host/src/guest
+
+          runHook postBuildGuest
+          popd
+        '';
+
         buildPhase = ''
           export INPUTS="$PWD/Vertices-010.in"
 
           pushd zkvms/${currentPackage.pname}
+          runPhase buildGuestPhase
           runHook preBuild
 
           cargo build --bin ${hostBin} --release
@@ -52,7 +68,6 @@
           mkdir -p "$out"/bin
           for bin in $(find . -type f -regex "./zkvms/.*release/[^/]*" -executable -print)
           do
-            echo "$bin"
             mv "$bin" "$out"/bin/
           done
 
