@@ -1,0 +1,13 @@
+[package]
+name = "host-zkwasm"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+zkvms_host_io = { path = "../../../zkvms_host_io" }
+
+# THESE ARE A COPY OF THE GUEST DEPENDENCIES
+# They're here as a hack, so crane.lib will fetch them
+rlp = { version = "0.5.2", default-features = false }
+zkwasm-rust-sdk = { git = "https://github.com/DelphinusLab/zkWasm-rust.git" }
+wasm-bindgen = "0.2.95"
