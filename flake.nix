@@ -14,10 +14,14 @@
     # flake-utils.follows = "mcl-blockchain/flake-utils";
   };
 
-  outputs = { self, nixpkgs, mcl-blockchain, crane, ... }:
+  outputs = { self, nixpkgs, mcl-blockchain, crane, rust-overlay, ... }:
   let
     system = "x86_64-linux";
-    pkgs = import nixpkgs { system = system; overlays = [ mcl-blockchain.overlays.default ]; };
+    pkgs = import nixpkgs { system = system; overlays = [
+        mcl-blockchain.overlays.default
+        rust-overlay.overlays.default
+      ];
+    };
     callPackage = pkgs.lib.callPackageWith pkgs;
 
     fixDeps = commonArgs: commonArgs // {
@@ -96,6 +100,7 @@
     packages.${system} = {
       risc0 = callPackage ./zkvms/risc0/default.nix args-zkVM;
       sp1 = callPackage ./zkvms/sp1/default.nix args-zkVM;
+      zkwasm = callPackage ./zkvms/zkwasm/default.nix args-zkVM;
     };
   };
 }
