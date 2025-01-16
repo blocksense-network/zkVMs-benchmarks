@@ -1,7 +1,7 @@
 use proc_macro::{ TokenStream, TokenTree, Delimiter, Spacing, Group };
 
 /// Input:  "fn name(...) -> ... { ... }"
-/// Output: "name", "(...)", "-> ..."
+/// Output: "name", "(...)", "..."
 pub fn split_fn(item: &TokenStream) -> (TokenStream, TokenStream, TokenStream) {
     let item = item.clone().into_iter();
 
@@ -22,6 +22,10 @@ pub fn split_fn(item: &TokenStream) -> (TokenStream, TokenStream, TokenStream) {
             TokenTree::Punct(ref punct) => {
                 if punct.as_char() == '-' {
                     out = &mut ret;
+                    continue;
+                }
+                if punct.as_char() == '>' && out.is_empty() {
+                    continue;
                 }
             },
             TokenTree::Group(ref group) => {
