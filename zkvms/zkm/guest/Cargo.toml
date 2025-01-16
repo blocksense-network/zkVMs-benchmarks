@@ -1,0 +1,13 @@
+[package]
+name = "guest"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+
+[dependencies]
+# THESE DEPENDENCIES NEED TO BE PRESENT IN THE HOST CARGO.TOML
+zkm-runtime = { path = "/nix/store/h9s6kmnx7iafllv10wqhjix5kpyfsh37-zkm-unstable-2025-01-05/runtime/entrypoint" }
+
+zkp = { path = "./src/zkp" }
+wrapper_macro = { version = "0.1.0", path = "../wrapper_macro" }
