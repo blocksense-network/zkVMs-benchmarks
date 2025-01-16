@@ -133,7 +133,7 @@ pub fn args_divide(item: &TokenStream) -> (Vec<TokenStream>, Vec<TokenStream>) {
 /// Output: "(p1, p2, ...)"
 pub fn group_streams(patterns: &Vec<TokenStream>) -> TokenStream {
     let mut inner_ts = TokenStream::new();
-    inner_ts.extend(patterns.clone().into_iter().flat_map(|i| [i, ",".parse().unwrap()]));
+    inner_ts.extend(patterns.clone().into_iter().flat_map(|i| [",".parse().unwrap(), i]).skip(1));
 
     let mut out = TokenStream::new();
     out.extend([TokenTree::Group(Group::new(Delimiter::Parenthesis, inner_ts))].into_iter());
