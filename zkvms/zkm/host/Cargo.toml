@@ -1,0 +1,20 @@
+[package]
+name = "host-zkm"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+zkm-sdk = { path = "../sdk", features = ["snark"] }
+bincode = "1.3.3"
+
+tokio = { version = "1.21.0", features = ["macros", "rt-multi-thread", "signal"] }
+
+log = { version = "0.4.14", default-features = false }
+env_logger = "0.10.0"
+anyhow = "1.0.75"
+
+zkvms_host_io = { path = "../../../zkvms_host_io" }
+
+# THESE ARE A COPY OF THE GUEST DEPENDENCIES
+# They're here as a hack, so crane.lib will fetch them
+zkm-runtime = { path = "/nix/store/h9s6kmnx7iafllv10wqhjix5kpyfsh37-zkm-unstable-2025-01-05/runtime/entrypoint" }
