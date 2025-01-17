@@ -26,12 +26,14 @@
 
     fixDeps = commonArgs: commonArgs // {
         postUnpack = ''
+          ${commonArgs.postUnpack or ""}
           ln -s ../../../guests ./source/zkvms/${commonArgs.pname}/guest/
           ln -s ../../../guests_macro ./source/zkvms/${commonArgs.pname}/guest/
           ln -s ../../Cargo.lock ./source/zkvms/${commonArgs.pname}/
         '';
 
         preBuild = ''
+          ${commonArgs.preBuild or ""}
           cd zkvms/${commonArgs.pname}
         '';
       };
