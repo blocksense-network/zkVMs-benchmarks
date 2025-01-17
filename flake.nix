@@ -48,7 +48,7 @@
           pushd guest
           runHook preBuildGuest
 
-          cargo build --release --target ${currentPackage.guestTarget}
+          cargo build --release --target ${currentPackage.guestTarget} ${currentPackage.extraGuestArgs or ""}
           ln -s ../../guest/target/${currentPackage.guestTarget}/release/guest ../host/src/guest
 
           runHook postBuildGuest
