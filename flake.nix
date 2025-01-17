@@ -104,6 +104,7 @@
       sp1 = callPackage ./zkvms/sp1/default.nix args-zkVM;
       zkwasm = callPackage ./zkvms/zkwasm/default.nix args-zkVM;
       zkm = callPackage ./zkvms/zkm/default.nix args-zkVM;
+      jolt = callPackage ./zkvms/jolt/default.nix args-zkVM;
     };
   };
 }
