@@ -1,0 +1,13 @@
+[package]
+name = "guest"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+
+[dependencies]
+nexus-rt = { path = "/nix/store/krlanfap664k4g88qgsssxi0818z92r8-Nexus-zkVM-unstable-2024-12-18/runtime" }
+postcard = { version = "1.0.10", default-features = false, features = ["alloc"] }
+
+zkp = { path = "./src/zkp" }
+wrapper_macro = { version = "0.1.0", path = "../wrapper_macro" }
