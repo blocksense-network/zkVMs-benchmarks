@@ -1,0 +1,14 @@
+[package]
+name = "host-jolt"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+path = "/nix/store/q8ix3vj7dw6w57zhjc9wa38vicymql0g-jolt-unstable-2024-12-18/src/lib.rs"
+
+[dependencies]
+jolt-sdk = { path = "/nix/store/q8ix3vj7dw6w57zhjc9wa38vicymql0g-jolt-unstable-2024-12-18/jolt-sdk", features = ["host"] }
+jolt-core = { path = "/nix/store/q8ix3vj7dw6w57zhjc9wa38vicymql0g-jolt-unstable-2024-12-18/jolt-core" }
+
+guest = { path = "../guest" }
+zkvms_host_io = { path = "../../../zkvms_host_io" }
