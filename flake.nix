@@ -105,6 +105,7 @@
       zkwasm = callPackage ./zkvms/zkwasm/default.nix args-zkVM;
       zkm = callPackage ./zkvms/zkm/default.nix args-zkVM;
       jolt = callPackage ./zkvms/jolt/default.nix args-zkVM;
+      nexus = callPackage ./zkvms/nexus/default.nix args-zkVM;
     };
   };
 }
