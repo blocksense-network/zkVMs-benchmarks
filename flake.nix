@@ -39,17 +39,32 @@
       };
 
 
-    # Overrides build and install phases for use with zkVMs
+    # Creates custom build and install phases
+    # Adds the "buildGuest" phase
+    # Adds the "run" pseudo-phase (running your zkVM is done with a shell script,
+    #     this "phase" allows one to add things to the script)
     # Requirements:
     # - zkVM is inside zkvms/pname/
     # - guest crate is located at zkvms/pname/guest and is named "guest"
-    withCustomPhases = currentPackage: with currentPackage; {
+    withCustomPhases = currentPackage: let
+        hostBin = currentPackage.hostBin or ("host-" + currentPackage.pname);
+      in with currentPackage; {
+        phases = [
+          "unpackPhase" "patchPhase" "configurePhase" # Standard phases
+          "buildGuestPhase" # Custom phase
+          "buildPhase" "checkPhase" "installPhase" "fixupPhase" # Standard phases
+        ];
+
         buildGuestPhase = ''
-          pushd guest
+          pushd zkvms/${currentPackage.pname}/guest
           runHook preBuildGuest
 
-          cargo build --release --target ${currentPackage.guestTarget} ${currentPackage.extraGuestArgs or ""}
-          ln -s ../../guest/target/${currentPackage.guestTarget}/release/guest ../host/src/guest
+          ${currentPackage.buildGuestCommand or "cargo build --release"} \
+              ${if currentPackage ? guestTarget then "--target " + currentPackage.guestTarget else ""} \
+              ${currentPackage.guestExtraArgs or ""}
+
+          ${if currentPackage ? guestTarget then "ln -s ../../guest/target/${currentPackage.guestTarget}/release/guest ../host/src/guest" else ""}
+          unset RUSTUP_TOOLCHAIN RUSTFLAGS CARGO_ENCODED_RUSTFLAGS
 
           runHook postBuildGuest
           popd
@@ -59,7 +74,6 @@
           export INPUTS="$PWD/Vertices-010.in"
 
           pushd zkvms/${currentPackage.pname}
-          runPhase buildGuestPhase
           runHook preBuild
 
           cargo build --bin ${hostBin} --release
@@ -68,7 +82,18 @@
           popd
         '';
 
-        installPhase = ''
+        installPhase = let
+          preRunBinaries =
+            if currentPackage ? preRunBinaries && builtins.length currentPackage.preRunBinaries > 0 then
+              "export PATH=\"\\$PATH:" + pkgs.lib.makeBinPath currentPackage.preRunBinaries + "\""
+            else
+              "";
+          preRunLibraries =
+            if currentPackage ? preRunLibraries && builtins.length currentPackage.preRunLibraries > 0 then
+              "export LD_LIBRARY_PATH=\"\\$LD_LIBRARY_PATH:" + pkgs.lib.makeLibraryPath currentPackage.preRunLibraries + "\""
+            else
+              "";
+        in ''
           runHook preInstall
 
           mkdir -p "$out"/bin
@@ -79,7 +104,9 @@
 
           cat <<EOF > "$out"/bin/${pname}
           #!/usr/bin/env sh
-          ${if currentPackage ? preRun then preRun else ""}
+          ${preRunBinaries}
+          ${preRunLibraries}
+          ${currentPackage.preRun or ""}
           "$out"/bin/${hostBin} \$@
           EOF
           chmod +x "$out"/bin/${pname}

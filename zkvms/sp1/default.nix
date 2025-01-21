@@ -40,7 +40,6 @@ in
         ln -s ../../../../guests/graph_coloring ./zkvms/sp1/guest/src/zkp
       '';
 
-      hostBin = "host-sp1";
       guestTarget = "riscv32im-succinct-zkvm-elf";
 
       doCheck = false;

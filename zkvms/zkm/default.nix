@@ -63,7 +63,6 @@ in
         ln -s ../../../../guests/graph_coloring ./zkvms/zkm/guest/src/zkp
       '';
 
-      hostBin = "host-zkm";
       guestTarget = "mips-zkm-zkvm-elf";
 
       preBuildGuest = ''
@@ -71,18 +70,18 @@ in
         export RUSTFLAGS="-C target-cpu=mips2 -C target-feature=+crt-static -C link-arg=-nostdlib -C link-arg=-g -C link-arg=--entry=main"
       '';
 
-      postBuildGuest = ''
-        unset RUSTFLAGS
+      preBuild = ''
+        export RUSTFLAGS="-L ${zkm_libsnark}/lib"
       '';
 
-      preBuild = ''
-        export RUSTFLAGS="-L ${zkm_libsnark}/lib $RUSTFLAGS"
-      '';
+      preRunLibraries = [
+        openssl
+        zkm_libsnark
+      ];
 
       preRun = ''
         export ELF_PATH="$out/bin/guest"
         export PKG_CONFIG_PATH='${openssl.dev}/lib/pkgconfig' # Dirty hack
-        export LD_LIBRARY_PATH='${lib.makeLibraryPath [ openssl zkm_libsnark ]}'
       '';
 
       doCheck = false;

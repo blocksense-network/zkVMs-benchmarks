@@ -48,30 +48,25 @@ in
         ln -s ../../../Cargo.lock ./zkvms/zkwasm/guest/
       '';
 
-      hostBin = "host-zkwasm";
-
-      buildGuestPhase = ''
-        pushd guest
-
+      preBuildGuest = ''
         # Workaround from
         # https://github.com/rustwasm/wasm-pack/issues/1335
         export WASM_PACK_CACHE=.wasm-pack-cache
+      '';
 
-        wasm-pack build --release --frozen
-        popd
+      buildGuestCommand = "wasm-pack build --release --frozen";
+
+      preBuild = ''
+        export GUEST_PATH="$out/pkg/guest_bg.wasm"
       '';
 
       postInstall = ''
         mv zkvms/zkwasm/guest/pkg "$out"/
       '';
 
-      preBuild = ''
-        export GUEST_PATH="$out/pkg/guest_bg.wasm"
-      '';
-
-      preRun = ''
-        export PATH="\$PATH:${metacraft-labs.zkwasm}/bin"
-      '';
+      preRunBinaries = [
+        metacraft-labs.zkwasm
+      ];
 
       doCheck = false;
     }))

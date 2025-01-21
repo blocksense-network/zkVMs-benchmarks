@@ -43,23 +43,20 @@ in
         ln -s ../../../../guests/graph_coloring ./zkvms/nexus/guest/src/zkp
       '';
 
-      hostBin = "host-nexus";
-      guestTarget = "riscv32i-unknown-none-elf";
-      extraGuestArgs = "--features no_std -- -C link-arg=-T${guest/guest.ld}";
-
-      buildGuestPhase = ''
-        pushd guest
-
-        cargo rustc --release --target ${guestTarget} ${extraGuestArgs}
-        ln -s ../../guest/target/${guestTarget}/release/guest ../host/src/guest
-
-        popd
+      preBuildGuest = ''
+        export RUSTFLAGS="-C link-arg=-T${guest/guest.ld}"
       '';
+
+      guestTarget = "riscv32i-unknown-none-elf";
+      guestExtraArgs = "--features no_std";
+
+      preRunLibraries = [
+        openssl
+      ];
 
       preRun = ''
         export ELF_PATH="$out/bin/guest"
         export PKG_CONFIG_PATH='${openssl.dev}/lib/pkgconfig' # Dirty hack
-        export LD_LIBRARY_PATH='${lib.makeLibraryPath [ openssl ]}'
       '';
 
       doCheck = false;

@@ -49,23 +49,21 @@ in
         sed -i '/guest\/guests/d' ./zkvms/jolt/Cargo.toml
       '';
 
-      hostBin = "host-jolt";
       guestTarget = "riscv32im-jolt-zkvm-elf";
-      extraGuestArgs = "--features guest";
+      guestExtraArgs = "--features guest";
 
       preBuildGuest = ''
-        export RUSTUP_TOOLCHAIN="x"
-        export RUSTFLAGS="-C link-arg=-T${./guest/guest.ld} -C passes=lower-atomic -C panic=abort -C strip=symbols -C opt-level=z"
+        RUSTUP_TOOLCHAIN="x"
+        RUSTFLAGS="-C link-arg=-T${./guest/guest.ld} -C passes=lower-atomic -C panic=abort -C strip=symbols -C opt-level=z"
+        export RUSTUP_TOOLCHAIN RUSTFLAGS
       '';
 
-      preBuild = ''
-        unset RUSTUP_TOOLCHAIN
-        export RUSTFLAGS="-Z macro-backtrace"
-      '';
+      preRunBinaries = [
+        metacraft-labs.jolt
+      ];
 
       preRun = ''
         export ELF_PATH="$out/bin/guest"
-        export PATH="$PATH:${metacraft-labs.jolt}/bin"
       '';
 
       doCheck = false;
