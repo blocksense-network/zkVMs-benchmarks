@@ -45,7 +45,7 @@ in
 
       hostBin = "host-nexus";
       guestTarget = "riscv32i-unknown-none-elf";
-      extraGuestArgs = "-- --cfg 'feature=\"no_std\"' -C link-arg=-T${guest/guest.ld}";
+      extraGuestArgs = "--features no_std -- -C link-arg=-T${guest/guest.ld}";
 
       buildGuestPhase = ''
         pushd guest
