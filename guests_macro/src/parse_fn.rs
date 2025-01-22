@@ -45,7 +45,7 @@ pub fn split_fn(item: &TokenStream) -> (TokenStream, TokenStream, TokenStream) {
 }
 
 /// Input:  "(p1 : t1, p2: t2, ...)"
-/// Output: "p1 : t1", "p2: t2", ...
+/// Output: vec!["p1 : t1", "p2: t2", ...]
 pub fn args_split(item: &TokenStream) -> Vec<TokenStream> {
     let contents;
     if let TokenTree::Group(group) = item.clone().into_iter().next().unwrap() {
@@ -78,8 +78,8 @@ pub fn args_split(item: &TokenStream) -> Vec<TokenStream> {
     args
 }
 
-/// Input:  (p1 : t1, p2: t2, ...)
-/// Output: (p1, p2, ...), (t1, t2, ...)
+/// Input:  "(p1 : t1, p2: t2, ...)"
+/// Output: vec![p1, p2, ...], vec![t1, t2, ...]
 pub fn args_divide(item: &TokenStream) -> (Vec<TokenStream>, Vec<TokenStream>) {
     let contents;
     if let TokenTree::Group(group) = item.clone().into_iter().next().unwrap() {
@@ -129,7 +129,14 @@ pub fn args_divide(item: &TokenStream) -> (Vec<TokenStream>, Vec<TokenStream>) {
     (patterns, types)
 }
 
-/// Input:  "p1 p2 ..."
+/// Input:  "(p1 : t1, p2: t2, ...)"
+/// Output: "(p1, p2, ...)", "(t1, t2, ...)"
+pub fn args_divide_grouped(item: &TokenStream) -> (TokenStream, TokenStream) {
+    let (patterns, types) = args_divide(&item);
+    (group_streams(&patterns), group_streams(&types))
+}
+
+/// Input:  vec![p1, p2, ...]
 /// Output: "(p1, p2, ...)"
 pub fn group_streams(patterns: &Vec<TokenStream>) -> TokenStream {
     let mut inner_ts = TokenStream::new();
