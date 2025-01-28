@@ -97,7 +97,7 @@ pub fn args_divide(item: &TokenStream) -> (Vec<TokenStream>, Vec<TokenStream>) {
     for tt in contents {
         match tt {
             TokenTree::Punct(ref punct) => {
-                if punct.spacing() == Spacing::Joint {
+                if punct.spacing() == Spacing::Joint && punct.as_char() == ':' {
                     ignore_next = true;
                 }
                 else if !ignore_next {
