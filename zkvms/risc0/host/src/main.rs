@@ -1,4 +1,4 @@
-use zkvms_host_io::{read_args, RunType::{ Execute, Prove, Verify }};
+use zkvms_host_io::{Input, foreach_input_field, read_args, RunType::{ Execute, Prove, Verify }};
 use risc0_zkvm::{default_prover, default_executor, ExecutorEnv, Receipt};
 use risc0_zkp::core::digest::Digest;
 use hex::FromHex;
@@ -8,18 +8,12 @@ static HELLO_GUEST_ELF: &[u8] = include_bytes!("./guest");
 // https://github.com/risc0/risc0/blob/881e512732eca72849b2d0e263a1242aba3158af/risc0/build/src/lib.rs#L255
 static HELLO_GUEST_ID: &str = env!("GUEST_ID");
 
-type Input = (Vec<Vec<bool>>, u32, Vec<Vec<u32>>);
-
-fn build_env((graph, colors, coloring): &Input) -> ExecutorEnv {
-    ExecutorEnv::builder()
-        .write(&graph)
-        .unwrap()
-        .write(&colors)
-        .unwrap()
-        .write(&coloring)
-        .unwrap()
-        .build()
-        .unwrap()
+fn build_env(input: &Input) -> ExecutorEnv {
+    let mut builder = ExecutorEnv::builder();
+    foreach_input_field!{
+        builder.write(&input.yield).unwrap();
+    }
+    builder.build().unwrap()
 }
 
 fn prove(env: ExecutorEnv) -> Receipt {
