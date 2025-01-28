@@ -11,11 +11,11 @@ pub fn main() {
     match run_info.run_type {
         Execute => unreachable!(),
         Prove => {
-            let (output, _) = prove_guest(run_info.input);
+            let (output, _) = prove_guest(run_info.input.into());
             println!("Prove output: {}", output);
         },
         Verify => {
-            let (_, proof) = prove_guest(run_info.input);
+            let (_, proof) = prove_guest(run_info.input.into());
             let is_valid = verify_guest(proof);
             println!("Verify is valid: {}", is_valid);
         },
