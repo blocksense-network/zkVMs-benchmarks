@@ -1,16 +1,14 @@
-use zkvms_host_io::{read_args, RunType::{ Execute, Prove, Verify }};
+use zkvms_host_io::{Input, foreach_input_field, read_args, RunType::{ Execute, Prove, Verify }};
 use sp1_sdk::{ProverClient, EnvProver, SP1Stdin, SP1ProofWithPublicValues, SP1VerifyingKey};
 
 /// The ELF (executable and linkable format) file for the Succinct RISC-V zkVM.
 pub const FIBONACCI_ELF: &[u8] = include_bytes!("./guest");
 
-type Input = (Vec<Vec<bool>>, u32, Vec<Vec<u32>>);
-
-fn build_stdin((graph, colors, coloring): &Input) -> SP1Stdin {
+fn build_stdin(input: &Input) -> SP1Stdin {
     let mut stdin = SP1Stdin::new();
-    stdin.write(&graph);
-    stdin.write(&colors);
-    stdin.write(&coloring);
+    foreach_input_field!{
+        stdin.write(&input.yield);
+    }
     stdin
 }
 
