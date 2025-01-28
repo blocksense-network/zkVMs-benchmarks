@@ -48,12 +48,19 @@
     # - guest crate is located at zkvms/pname/guest and is named "guest"
     withCustomPhases = guest: currentPackage: let
         hostBin = currentPackage.hostBin or ("host-" + currentPackage.pname);
+        zkpPath = "zkvms/${currentPackage.pname}/guest/src/zkp";
       in with currentPackage; {
         phases = [
-          "unpackPhase" "patchPhase" "configurePhase" # Standard phases
+          "unpackPhase" # Standard phases
+          "linkGuest" # Custom phase
+          "patchPhase" "configurePhase" # Standard phases
           "buildGuestPhase" # Custom phase
           "buildPhase" "checkPhase" "installPhase" "fixupPhase" # Standard phases
         ];
+
+        linkGuest = ''
+          ln -s ../../../../guests/${guest} ./${zkpPath}
+        '';
 
         buildGuestPhase = ''
           pushd zkvms/${currentPackage.pname}/guest

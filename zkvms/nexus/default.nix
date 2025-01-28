@@ -39,10 +39,6 @@ in
     // rec {
       inherit cargoArtifacts;
 
-      postPatch = ''
-        ln -s ../../../../guests/graph_coloring ./zkvms/nexus/guest/src/zkp
-      '';
-
       preBuildGuest = ''
         export RUSTFLAGS="-C link-arg=-T${guest/guest.ld}"
       '';

@@ -36,10 +36,6 @@ in
         metacraft-labs.risc0
       ];
 
-      postPatch = ''
-        ln -s ../../../../guests/graph_coloring ./zkvms/risc0/guest/src/zkp
-      '';
-
       guestTarget = "riscv32im-risc0-zkvm-elf";
 
       preBuild = ''

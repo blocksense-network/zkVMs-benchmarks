@@ -45,7 +45,6 @@ in
       inherit cargoArtifacts;
 
       postPatch = ''
-        ln -s ../../../../guests/graph_coloring ./zkvms/jolt/guest/src/zkp
         sed -i '/guest\/guests/d' ./zkvms/jolt/Cargo.toml
       '';
 

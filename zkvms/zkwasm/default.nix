@@ -44,7 +44,6 @@ in
       ];
 
       postPatch = ''
-        ln -s ../../../../guests/graph_coloring ./zkvms/zkwasm/guest/src/zkp
         ln -s ../../../Cargo.lock ./zkvms/zkwasm/guest/
       '';
 

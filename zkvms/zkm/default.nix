@@ -59,10 +59,6 @@ in
     // {
       inherit cargoArtifacts;
 
-      postPatch = ''
-        ln -s ../../../../guests/graph_coloring ./zkvms/zkm/guest/src/zkp
-      '';
-
       guestTarget = "mips-zkm-zkvm-elf";
 
       preBuildGuest = ''

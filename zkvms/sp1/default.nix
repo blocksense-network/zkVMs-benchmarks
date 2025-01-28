@@ -36,10 +36,6 @@ in
         metacraft-labs.sp1
       ];
 
-      postPatch = ''
-        ln -s ../../../../guests/graph_coloring ./zkvms/sp1/guest/src/zkp
-      '';
-
       guestTarget = "riscv32im-succinct-zkvm-elf";
 
       doCheck = false;
