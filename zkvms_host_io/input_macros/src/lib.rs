@@ -34,3 +34,16 @@ pub fn generate_input_struct(_: TokenStream) -> TokenStream {
 
     struct_def.parse::<TokenStream>().unwrap()
 }
+
+#[proc_macro]
+pub fn foreach_input_field(item: TokenStream) -> TokenStream {
+    let arg_patterns = args_divide(&get_args()).0;
+
+    let expr = format!("{}", item);
+    let mut out = String::new();
+    for field in arg_patterns {
+        // Unquoted yield is a keyword, so it is not allowed as field name
+        out += &expr.replace(".yield", &format!(".{field}"));
+    }
+    out.parse::<TokenStream>().unwrap()
+}
