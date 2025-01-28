@@ -1,11 +1,10 @@
-use zkvms_host_io::{read_args, RunType::{ Execute, Prove, Verify }};
+use zkvms_host_io::{Input, read_args, RunType::{ Execute, Prove, Verify }};
 use nexus_sdk::{
     compile::CompileOpts,
     nova::seq::{Generate, Nova, PP},
     Local, Prover, Verifiable,
 };
 
-type Input = (Vec<Vec<bool>>, u32, Vec<Vec<u32>>);
 type Output = bool;
 
 fn main() {
@@ -22,14 +21,12 @@ fn main() {
     println!("Loading guest...");
     let prover: Nova<Local> = Nova::new_from_file(&elf_path).expect("failed to load guest program");
 
-    let input: Input = run_info.input;
-
     match run_info.run_type {
         Execute => unreachable!(),
         Prove => {
             println!("Proving execution of vm...");
             let proof = prover
-                .prove_with_input::<Input>(&pp, &input)
+                .prove_with_input::<Input>(&pp, &run_info.input)
                 .expect("failed to prove program");
 
             println!(
@@ -44,7 +41,7 @@ fn main() {
         Verify => {
             println!("Proving execution of vm...");
             let proof = prover
-                .prove_with_input::<Input>(&pp, &input)
+                .prove_with_input::<Input>(&pp, &run_info.input)
                 .expect("failed to prove program");
 
             println!(
