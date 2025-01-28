@@ -78,7 +78,7 @@
         '';
 
         buildPhase = ''
-          export INPUTS="$PWD/Vertices-010.in"
+          export INPUTS_DIR="$PWD/${zkpPath}"
 
           pushd zkvms/${currentPackage.pname}
           runHook preBuild
