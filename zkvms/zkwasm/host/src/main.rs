@@ -1,25 +1,27 @@
-use zkvms_host_io::{read_args, RunType::{Execute, Prove, Verify}};
+use zkvms_host_io::{Input, foreach_input_field, read_args, RunType::{Execute, Prove, Verify}};
 use std::io::{self, Write};
 use std::process::{Command, Stdio};
+use regex::Regex;
 
 static K: &str = "19";
 static SCHEME: &str = "shplonk";
 
-type Input = (Vec<Vec<bool>>, u32, Vec<Vec<u32>>);
+fn build_input(input: &Input) -> String {
+    let numreg: Regex = Regex::new("(?:^|[^A-Za-z])([0-9]+)").unwrap();
 
-fn build_input((graph, colors, coloring): &Input) -> String {
     let mut ret = String::new();
-    for vec in graph {
-        for b in vec {
-            ret.push_str(&(*b as i32).to_string());
-            ret.push_str(":i64,");
-        }
-    }
-    ret.push_str(&colors.to_string());
-    ret.push_str(":i64,");
-    for vec in coloring {
-        for c in vec {
-            ret.push_str(&c.to_string());
+    foreach_input_field!{
+        let flat = format!("{:?}", input.yield)
+            .replace("false", "0")
+            .replace("true",  "1");
+
+        let numbers: Vec<&str> = numreg
+            .captures_iter(&flat)
+            .map(|cap| cap.get(1).unwrap().as_str())
+            .collect();
+
+        for num in numbers {
+            ret.push_str(num);
             ret.push_str(":i64,");
         }
     }
