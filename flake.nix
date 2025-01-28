@@ -46,7 +46,7 @@
     # Requirements:
     # - zkVM is inside zkvms/pname/
     # - guest crate is located at zkvms/pname/guest and is named "guest"
-    withCustomPhases = currentPackage: let
+    withCustomPhases = guest: currentPackage: let
         hostBin = currentPackage.hostBin or ("host-" + currentPackage.pname);
       in with currentPackage; {
         phases = [
@@ -117,22 +117,34 @@
         doNotPostBuildInstallCargoBinaries = true;
       } // currentPackage;
 
+    createPackages = guestName: let
+      guest = if guestName == null then "graph_coloring" else guestName;
+      postfix = if guestName == null then "" else "/" + guest;
 
-    args-zkVM = {
-      craneLib-default = crane.mkLib pkgs;
-      zkVM-helpers = {
-        inherit fixDeps;
-        inherit withCustomPhases;
+      args-zkVM = {
+        craneLib-default = crane.mkLib pkgs;
+        zkVM-helpers = {
+          inherit fixDeps;
+          withCustomPhases = withCustomPhases guest;
+        };
       };
+    in {
+      "risc0${postfix}" = callPackage ./zkvms/risc0/default.nix args-zkVM;
+      "sp1${postfix}" = callPackage ./zkvms/sp1/default.nix args-zkVM;
+      "zkwasm${postfix}" = callPackage ./zkvms/zkwasm/default.nix args-zkVM;
+      "zkm${postfix}" = callPackage ./zkvms/zkm/default.nix args-zkVM;
+      "jolt${postfix}" = callPackage ./zkvms/jolt/default.nix args-zkVM;
+      "nexus${postfix}" = callPackage ./zkvms/nexus/default.nix args-zkVM;
     };
+
+    guests = [ null ] ++ (builtins.attrNames
+      (pkgs.lib.filterAttrs
+        (_: type: type == "directory")
+        (builtins.readDir ./guests)));
   in {
-    packages.${system} = {
-      risc0 = callPackage ./zkvms/risc0/default.nix args-zkVM;
-      sp1 = callPackage ./zkvms/sp1/default.nix args-zkVM;
-      zkwasm = callPackage ./zkvms/zkwasm/default.nix args-zkVM;
-      zkm = callPackage ./zkvms/zkm/default.nix args-zkVM;
-      jolt = callPackage ./zkvms/jolt/default.nix args-zkVM;
-      nexus = callPackage ./zkvms/nexus/default.nix args-zkVM;
-    };
+    packages.${system} = pkgs.lib.foldr
+      (guest: accum: accum // (createPackages guest))
+      {}
+      guests;
   };
 }
