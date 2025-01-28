@@ -12,7 +12,7 @@ crate-type = ["cdylib"]
 # THESE DEPENDENCIES NEED TO BE PRESENT IN THE HOST CARGO.TOML
 rlp = { version = "0.5.2", default-features = false }
 zkwasm-rust-sdk = { git = "https://github.com/DelphinusLab/zkWasm-rust.git" }
-wasm-bindgen = "0.2.95"
+wasm-bindgen = "=0.2.95"
 
 zkp = { path = "./src/zkp" }
 wrapper_macro = { version = "0.1.0", path = "../wrapper_macro" }
