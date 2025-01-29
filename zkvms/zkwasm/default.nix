@@ -6,9 +6,10 @@
   wasm-bindgen-cli,
   binaryen,
   craneLib-default,
+  stdenv,
 }:
 let
-  commonArgs = {
+  commonArgs = zkVM-helpers.withGeneratedLockfile {
     pname = "zkwasm";
     version = "infdev";
 
@@ -22,8 +23,6 @@ let
           ../../Vertices-010.in
       ]);
     };
-
-    cargoLock = ./Cargo.lock;
   };
 
   rust-toolchain = rust-bin.nightly."2024-04-09".default.override {
@@ -42,10 +41,6 @@ in
         wasm-bindgen-cli
         binaryen
       ];
-
-      postPatch = ''
-        ln -s ../../../Cargo.lock ./zkvms/zkwasm/guest/
-      '';
 
       preBuildGuest = ''
         # Workaround from
