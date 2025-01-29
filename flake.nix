@@ -22,6 +22,7 @@
         rust-overlay.overlays.default
       ];
     };
+    craneLib-default = crane.mkLib pkgs;
     callPackage = pkgs.lib.callPackageWith pkgs;
 
     fixDeps = commonArgs: commonArgs // {
@@ -29,15 +30,34 @@
           ${commonArgs.postUnpack or ""}
           ln -s ../../../guests ./source/zkvms/${commonArgs.pname}/guest/
           ln -s ../../../guests_macro ./source/zkvms/${commonArgs.pname}/guest/
-          ln -s ../../Cargo.lock ./source/zkvms/${commonArgs.pname}/
         '';
 
         preBuild = ''
           ${commonArgs.preBuild or ""}
-          cd zkvms/${commonArgs.pname}
+          cd zkvms/${commonArgs.pname}/host
+          cargo check --release --offline --all-targets
         '';
       };
 
+    withGeneratedLockfile = guest: commonArgs: with pkgs; {
+        cargoVendorDir = craneLib-default.vendorCargoDeps {
+          src = stdenv.mkDerivation {
+            name = "cargolock";
+            src = lib.fileset.toSource {
+              root = ./.;
+              fileset = ./.;
+            };
+
+            installPhase = ''
+              mkdir -p "$out"
+              cd zkvms/${commonArgs.pname}
+              cat ./host/Cargo.lock > "$out/Cargo.lock"
+              tail -n +4 ./guest/Cargo.lock >> "$out/Cargo.lock"
+              tail -n +4 ../../guests/${guest}/Cargo.lock >> "$out/Cargo.lock"
+            '';
+          };
+        };
+      } // commonArgs;
 
     # Creates custom build and install phases
     # Adds the "buildGuest" phase
@@ -48,7 +68,6 @@
     # - guest crate is located at zkvms/pname/guest and is named "guest"
     withCustomPhases = guest: currentPackage: let
         hostBin = currentPackage.hostBin or ("host-" + currentPackage.pname);
-        zkpPath = "zkvms/${currentPackage.pname}/guest/src/zkp";
       in with currentPackage; {
         phases = [
           "unpackPhase" # Standard phases
@@ -59,7 +78,7 @@
         ];
 
         linkGuest = ''
-          ln -s ../../../../guests/${guest} ./${zkpPath}
+          echo 'zkp = { path = "../../../guests/${guest}", package = "${guest}" }' >> zkvms/${currentPackage.pname}/guest/Cargo.toml
         '';
 
         buildGuestPhase = ''
@@ -78,12 +97,12 @@
         '';
 
         buildPhase = ''
-          export INPUTS_DIR="$PWD/${zkpPath}"
+          export INPUTS_DIR="$PWD/guests/${guest}"
 
-          pushd zkvms/${currentPackage.pname}
+          pushd zkvms/${currentPackage.pname}/host
           runHook preBuild
 
-          cargo build --bin ${hostBin} --release
+          cargo build --release
 
           runHook postBuild
           popd
@@ -129,9 +148,10 @@
       postfix = if guestName == null then "" else "/" + guest;
 
       args-zkVM = {
-        craneLib-default = crane.mkLib pkgs;
+        inherit craneLib-default;
         zkVM-helpers = {
           inherit fixDeps;
+          withGeneratedLockfile = withGeneratedLockfile guest;
           withCustomPhases = withCustomPhases guest;
         };
       };
