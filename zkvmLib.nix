@@ -54,8 +54,15 @@ in {
       "buildPhase" "checkPhase" "installPhase" "fixupPhase" # Standard phases
     ];
 
-    linkGuest = ''
-      echo 'zkp = { path = "../../../guests/${guest}", package = "${guest}" }' >> zkvms/${args.pname}/guest/Cargo.toml
+    linkGuest = let
+      appended = ''
+        zkp = { path = "../../../guests/${guest}", package = "${guest}" }
+
+        [features]
+        no_std = ["zkp/no_std"]
+      '';
+    in ''
+      echo '${appended}' >> zkvms/${args.pname}/guest/Cargo.toml
     '';
 
     buildGuestPhase = ''
