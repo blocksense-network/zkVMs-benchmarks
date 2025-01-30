@@ -7,7 +7,3 @@ edition = "2021"
 nexus-sdk = { path = "/nix/store/krlanfap664k4g88qgsssxi0818z92r8-Nexus-zkVM-unstable-2024-12-18/sdk" }
 
 zkvms_host_io = { path = "../../../zkvms_host_io" }
-
-# THESE ARE A COPY OF THE GUEST DEPENDENCIES
-# They're here as a hack, so crane.lib will fetch them
-postcard = { version = "1.0.10", default-features = false, features = ["alloc"] }

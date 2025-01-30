@@ -1,4 +1,4 @@
-{ zkVM-helpers,
+{ zkvmLib,
   stdenv,
   lib,
   just,
@@ -23,8 +23,6 @@ let
       ]);
     };
 
-    cargoLock = ./Cargo.lock;
-
     nativeBuildInputs = [
       metacraft-labs.nexus
       openssl
@@ -33,9 +31,9 @@ let
   };
 
   craneLib = craneLib-default.overrideToolchain metacraft-labs.nexus;
-  cargoArtifacts = craneLib.buildDepsOnly (zkVM-helpers.fixDeps commonArgs);
+  cargoArtifacts = zkvmLib.buildDepsOnly craneLib commonArgs;
 in
-  craneLib.buildPackage (zkVM-helpers.withCustomPhases (commonArgs
+  zkvmLib.buildPackage craneLib (commonArgs
     // rec {
       inherit cargoArtifacts;
 
@@ -56,4 +54,4 @@ in
       '';
 
       doCheck = false;
-    }))
+    })
