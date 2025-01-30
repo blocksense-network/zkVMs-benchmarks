@@ -1,4 +1,4 @@
-{ zkVM-helpers,
+{ zkvmLib,
   stdenv,
   lib,
   just,
@@ -21,14 +21,12 @@ let
           ../../Vertices-010.in
       ]);
     };
-
-    cargoLock = ./Cargo.lock;
   };
 
   craneLib = craneLib-default.overrideToolchain metacraft-labs.sp1;
-  cargoArtifacts = craneLib.buildDepsOnly (zkVM-helpers.fixDeps commonArgs);
+  cargoArtifacts = zkvmLib.buildDepsOnly craneLib commonArgs;
 in
-  craneLib.buildPackage (zkVM-helpers.withCustomPhases (commonArgs
+  zkvmLib.buildPackage craneLib (commonArgs
     // {
       inherit cargoArtifacts;
 
@@ -39,4 +37,4 @@ in
       guestTarget = "riscv32im-succinct-zkvm-elf";
 
       doCheck = false;
-    }))
+    })
