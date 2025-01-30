@@ -15,7 +15,3 @@ env_logger = "0.10.0"
 anyhow = "1.0.75"
 
 zkvms_host_io = { path = "../../../zkvms_host_io" }
-
-# THESE ARE A COPY OF THE GUEST DEPENDENCIES
-# They're here as a hack, so crane.lib will fetch them
-zkm-runtime = { path = "/nix/store/h9s6kmnx7iafllv10wqhjix5kpyfsh37-zkm-unstable-2025-01-05/runtime/entrypoint" }
