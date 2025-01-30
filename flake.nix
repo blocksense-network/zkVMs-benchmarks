@@ -29,6 +29,12 @@
       (pkgs.lib.filterAttrs
         (_: type: type == "directory")
         (builtins.readDir ./zkvms));
+
+    guests = [ null ] ++ (builtins.attrNames
+      (pkgs.lib.filterAttrs
+        (_: type: type == "directory")
+        (builtins.readDir ./guests)));
+
     foldr = pkgs.lib.foldr;
 
     createPackages = guestName: let
@@ -46,14 +52,18 @@
       {}
       zkvms;
 
-    guests = [ null ] ++ (builtins.attrNames
-      (pkgs.lib.filterAttrs
-        (_: type: type == "directory")
-        (builtins.readDir ./guests)));
-  in {
-    packages.${system} = pkgs.lib.foldr
+    hostPackages = foldr
       (guest: accum: accum // (createPackages guest))
       {}
       guests;
+
+    guestPackages = foldr
+      (guest: accum: accum // {
+          ${guest} = callPackage ./guest.nix { inherit guest; inherit zkvms; inherit hostPackages; };
+        })
+      {}
+      guests;
+  in {
+    packages.${system} = hostPackages // guestPackages;
   };
 }
