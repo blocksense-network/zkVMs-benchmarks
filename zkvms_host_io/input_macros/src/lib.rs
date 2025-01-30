@@ -4,9 +4,8 @@ use proc_macro::TokenStream;
 mod parse_fn;
 use crate::parse_fn::{ args_split, args_divide, group_streams };
 
-
 fn get_args() -> TokenStream {
-    "(graph: Vec<Vec<bool>>, colors: u32, coloring: Vec<Vec<u32>>,)".parse::<TokenStream>().unwrap()
+    include_str!("../../../guests/type.txt").parse::<TokenStream>().unwrap()
 }
 
 #[proc_macro]
