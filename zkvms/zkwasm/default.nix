@@ -1,4 +1,4 @@
-{ zkVM-helpers,
+{ zkvmLib,
   lib,
   rust-bin,
   metacraft-labs,
@@ -9,7 +9,7 @@
   stdenv,
 }:
 let
-  commonArgs = zkVM-helpers.withGeneratedLockfile {
+  commonArgs = rec {
     pname = "zkwasm";
     version = "infdev";
 
@@ -29,9 +29,9 @@ let
     targets = ["wasm32-unknown-unknown"];
   };
   craneLib = craneLib-default.overrideToolchain rust-toolchain;
-  cargoArtifacts = craneLib.buildDepsOnly (zkVM-helpers.fixDeps commonArgs);
+  cargoArtifacts = zkvmLib.buildDepsOnly craneLib commonArgs;
 in
-  craneLib.buildPackage (zkVM-helpers.withCustomPhases (commonArgs
+  zkvmLib.buildPackage craneLib (commonArgs
     // {
       inherit cargoArtifacts;
 
@@ -63,4 +63,4 @@ in
       ];
 
       doCheck = false;
-    }))
+    })
