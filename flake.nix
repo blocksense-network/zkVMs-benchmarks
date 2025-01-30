@@ -25,6 +25,12 @@
     craneLib-default = crane.mkLib pkgs;
     callPackage = pkgs.lib.callPackageWith pkgs;
 
+    zkvms = builtins.attrNames
+      (pkgs.lib.filterAttrs
+        (_: type: type == "directory")
+        (builtins.readDir ./zkvms));
+    foldr = pkgs.lib.foldr;
+
     createPackages = guestName: let
       guest = if guestName == null then "graph_coloring" else guestName;
       postfix = if guestName == null then "" else "/" + guest;
@@ -33,14 +39,12 @@
         inherit craneLib-default;
         zkvmLib = (import ./zkvmLib.nix) pkgs guest;
       };
-    in {
-      "risc0${postfix}" = callPackage ./zkvms/risc0/default.nix args-zkVM;
-      "sp1${postfix}" = callPackage ./zkvms/sp1/default.nix args-zkVM;
-      "zkwasm${postfix}" = callPackage ./zkvms/zkwasm/default.nix args-zkVM;
-      "zkm${postfix}" = callPackage ./zkvms/zkm/default.nix args-zkVM;
-      "jolt${postfix}" = callPackage ./zkvms/jolt/default.nix args-zkVM;
-      "nexus${postfix}" = callPackage ./zkvms/nexus/default.nix args-zkVM;
-    };
+    in foldr
+      (host: accum: accum // {
+          "${host}${postfix}" = callPackage ./zkvms/${host}/default.nix args-zkVM;
+        })
+      {}
+      zkvms;
 
     guests = [ null ] ++ (builtins.attrNames
       (pkgs.lib.filterAttrs
