@@ -7,11 +7,7 @@ edition = "2021"
 name = "guest"
 path = "./src/lib.rs"
 
-[features]
-guest = []
-
 [dependencies]
 jolt = { package = "jolt-sdk", path = "/nix/store/q8ix3vj7dw6w57zhjc9wa38vicymql0g-jolt-unstable-2024-12-18/jolt-sdk", features = ["guest-std"] }
 
-zkp = { path = "./src/zkp" }
 wrapper_macro = { version = "0.1.0", path = "../wrapper_macro" }

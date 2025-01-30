@@ -1,4 +1,4 @@
-{ zkVM-helpers,
+{ zkvmLib,
   stdenv,
   lib,
   just,
@@ -23,8 +23,6 @@ let
       ]);
     };
 
-    cargoLock = ./Cargo.lock;
-
     nativeBuildInputs = [
       metacraft-labs.jolt
       openssl
@@ -33,20 +31,15 @@ let
   };
 
   craneLib = craneLib-default.overrideToolchain metacraft-labs.jolt;
-  cargoArtifacts = craneLib.buildDepsOnly (zkVM-helpers.fixDeps (commonArgs // {
+  cargoArtifacts = zkvmLib.buildDepsOnly craneLib (commonArgs // {
     postConfigure = ''
-      sed -i 's/"guest",//' zkvms/jolt/Cargo.toml
       sed -i '/dependencies.guest/,+1d' zkvms/jolt/host/Cargo.toml
     '';
-  }));
+  });
 in
-  craneLib.buildPackage (zkVM-helpers.withCustomPhases (commonArgs
+  zkvmLib.buildPackage craneLib (commonArgs
     // {
       inherit cargoArtifacts;
-
-      postPatch = ''
-        sed -i '/guest\/guests/d' ./zkvms/jolt/Cargo.toml
-      '';
 
       guestTarget = "riscv32im-jolt-zkvm-elf";
       guestExtraArgs = "--features guest";
@@ -66,4 +59,4 @@ in
       '';
 
       doCheck = false;
-    }))
+    })

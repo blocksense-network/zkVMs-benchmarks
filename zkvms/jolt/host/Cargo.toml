@@ -6,6 +6,18 @@ edition = "2021"
 [lib]
 path = "/nix/store/q8ix3vj7dw6w57zhjc9wa38vicymql0g-jolt-unstable-2024-12-18/src/lib.rs"
 
+[profile.release]
+debug = 1
+codegen-units = 1
+lto = "fat"
+
+[workspace]
+
+[patch.crates-io]
+ark-ff = { git = "https://github.com/a16z/arkworks-algebra", branch = "optimize/field-from-u64" }
+ark-ec = { git = "https://github.com/a16z/arkworks-algebra", branch = "optimize/field-from-u64" }
+ark-serialize = { git = "https://github.com/a16z/arkworks-algebra", branch = "optimize/field-from-u64" }
+
 [dependencies]
 jolt-sdk = { path = "/nix/store/q8ix3vj7dw6w57zhjc9wa38vicymql0g-jolt-unstable-2024-12-18/jolt-sdk", features = ["host"] }
 jolt-core = { path = "/nix/store/q8ix3vj7dw6w57zhjc9wa38vicymql0g-jolt-unstable-2024-12-18/jolt-core" }
