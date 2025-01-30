@@ -6,6 +6,5 @@ edition = "2021"
 [workspace]
 
 [dependencies]
-zkp = { path = "./src/zkp" }
 wrapper_macro = { version = "0.1.0", path = "../wrapper_macro" }
 risc0-zkvm = { path = "/nix/store/l1rxg23rrrdwi9cf6rc82mqavklvqc18-risc0-unstable-2024-12-21/risc0/zkvm", default-features = false, features = ['std'] }

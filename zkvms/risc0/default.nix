@@ -1,7 +1,6 @@
-{ zkVM-helpers,
+{ zkvmLib,
   stdenv,
   lib,
-  just,
   metacraft-labs,
   pkg-config,
   craneLib-default,
@@ -21,14 +20,12 @@ let
           ../../Vertices-010.in
       ]);
     };
-
-    cargoLock = ./Cargo.lock;
   };
 
   craneLib = craneLib-default.overrideToolchain metacraft-labs.risc0;
-  cargoArtifacts = craneLib.buildDepsOnly (zkVM-helpers.fixDeps commonArgs);
+  cargoArtifacts = zkvmLib.buildDepsOnly craneLib commonArgs;
 in
-  craneLib.buildPackage (zkVM-helpers.withCustomPhases (commonArgs
+  zkvmLib.buildPackage craneLib (commonArgs
     // {
       inherit cargoArtifacts;
 
@@ -49,4 +46,4 @@ in
       ];
 
       doCheck = false;
-    }))
+    })
