@@ -59,6 +59,7 @@ in {
         zkp = { path = "../../../guests/${guest}", package = "${guest}" }
 
         [features]
+        guest = [] # Only used in jolt
         no_std = ["zkp/no_std"]
       '';
     in ''
