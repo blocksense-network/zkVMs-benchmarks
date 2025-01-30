@@ -39,9 +39,13 @@ in {
         cd zkvms/${args.pname}/guest
         cargo check --release --offline --all-targets
       '';
+  } // {
+    pname = "${args.pname}_${guest}";
   });
 
-  buildPackage = craneLib: args: craneLib.buildPackage ((generateCargoLocks craneLib args) // {
+  buildPackage = craneLib: args: let
+    pname = "${args.pname}_${guest}";
+  in craneLib.buildPackage ((generateCargoLocks craneLib args) // {
     phases = [
       "unpackPhase" # Standard phases
       "linkGuest" # Custom phase
@@ -101,18 +105,18 @@ in {
         mv "$bin" "$out"/bin/
       done
 
-      cat <<EOF > "$out"/bin/${args.pname}
+      cat <<EOF > "$out"/bin/${pname}
       #!/usr/bin/env sh
       ${preRunBinaries}
       ${preRunLibraries}
       ${args.preRun or ""}
       "$out"/bin/host-${args.pname} \$@
       EOF
-      chmod +x "$out"/bin/${args.pname}
+      chmod +x "$out"/bin/${pname}
 
       runHook postInstall
     '';
 
     doNotPostBuildInstallCargoBinaries = true;
-  } // args);
+  } // args // { inherit pname; });
 }
