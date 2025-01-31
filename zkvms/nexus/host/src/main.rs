@@ -1,11 +1,9 @@
-use zkvms_host_io::{Input, read_args, RunType::{ Execute, Prove, Verify }};
+use zkvms_host_io::{Input, Output, read_args, RunType::{ Execute, Prove, Verify }};
 use nexus_sdk::{
     compile::CompileOpts,
     nova::seq::{Generate, Nova, PP},
     Local, Prover, Verifiable,
 };
-
-type Output = bool;
 
 fn main() {
     let run_info = read_args();
