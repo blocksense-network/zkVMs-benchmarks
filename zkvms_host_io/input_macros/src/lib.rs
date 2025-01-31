@@ -4,13 +4,18 @@ use proc_macro::TokenStream;
 mod parse_fn;
 use crate::parse_fn::{ args_split, args_divide, group_streams };
 
-fn get_args() -> TokenStream {
-    include_str!("../../../guests/type.txt").parse::<TokenStream>().unwrap()
+fn get_types() -> (TokenStream, TokenStream) {
+    let types: Vec<&str> = include_str!("../../../guests/type.txt")
+        .split('\n')
+        .collect();
+    (types[0].parse::<TokenStream>().unwrap(), types[1].parse::<TokenStream>().unwrap())
 }
 
 #[proc_macro]
-pub fn generate_input_struct(_: TokenStream) -> TokenStream {
-    let args = &get_args();
+pub fn generate_output_type_input_struct(_: TokenStream) -> TokenStream {
+    let (args, ret) = get_types();
+    let output_type = format!("pub type Output = {};", ret).to_string();
+
     let all_args = args_split(&args);
 
     let mut struct_def = "#[derive(Debug, Serialize, Deserialize)] pub struct Input {".to_string();
@@ -31,12 +36,13 @@ pub fn generate_input_struct(_: TokenStream) -> TokenStream {
     }
     struct_def += ") } }";
 
-    struct_def.parse::<TokenStream>().unwrap()
+    (output_type + &struct_def).parse::<TokenStream>().unwrap()
 }
 
 #[proc_macro]
 pub fn foreach_input_field(item: TokenStream) -> TokenStream {
-    let arg_patterns = args_divide(&get_args()).0;
+    let (args, _) = get_types();
+    let arg_patterns = args_divide(&args).0;
 
     let expr = format!("{}", item);
     let mut out = String::new();

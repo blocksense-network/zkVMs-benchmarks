@@ -48,7 +48,7 @@ impl<T> RunWith<T> {
     }
 }
 
-input_macros::generate_input_struct!();
+input_macros::generate_output_type_input_struct!();
 
 pub fn read_args() -> RunWith<Input> {
     let cli = Cli::parse();
