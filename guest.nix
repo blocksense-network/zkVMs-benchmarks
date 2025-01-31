@@ -12,8 +12,13 @@ writeShellApplication {
     []
     zkvms;
 
-  text = lib.foldr
-    (zkvm: accum: accum + hostPackages."${zkvm}/${guest}" + "/bin/${zkvm}_${guest} \"$@\"\n")
+  text = ''
+    runZKVM() {
+      echo "$1"
+      "$@"
+    }
+  '' + lib.foldr
+    (zkvm: accum: accum + "runZKVM \"${hostPackages."${zkvm}/${guest}"}/bin/${zkvm}_${guest}\" \"$@\"\n")
     ""
     zkvms;
 }
