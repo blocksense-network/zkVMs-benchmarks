@@ -9,3 +9,4 @@ clap = { version = "4.5.26", features = ["derive"] }
 num-traits = "0.2.19"
 serde = { version = "1.0.217", features = ["derive"] }
 toml = "0.8.19"
+env-file-reader = "0.3.0"
