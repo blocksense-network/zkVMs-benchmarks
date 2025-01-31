@@ -1,8 +1,5 @@
-use anyhow::bail;
-use anyhow::Result;
-use std::env;
-use std::fs::read;
-use std::time::Instant;
+use anyhow::{bail, Result};
+use std::{env, fs::read, time::Instant};
 use zkm_sdk::{prover::ClientCfg, prover::{ProverInput, ProverResult} , ProverClient};
 
 use zkvms_host_io::{read_args, RunType::{ Execute, Prove, Verify }};
@@ -69,15 +66,25 @@ async fn main() -> Result<()> {
         panic!("Off-chain verification is not supported!");
     }
 
-    let seg_size = env::var("SEG_SIZE")
-        .ok()
-        .and_then(|seg| seg.parse::<u32>().ok())
-        .unwrap_or(8192);
+    let seg_size: u32 = run_info
+        .env_then_or(
+            "SEG_SIZE",
+            |seg| seg.parse::<u32>().ok(),
+            65536,
+        );
 
     let elf_path = env::var("ELF_PATH").expect("ELF PATH is missing");
 
-    let proof_results_path = env::var("PROOF_RESULTS_PATH").unwrap_or("/tmp/contracts".to_string());
-    let vk_path = env::var("VERIFYING_KEY_PATH").unwrap_or("/tmp/input".to_string());
+    let proof_results_path = run_info
+        .env_or(
+            "PROOF_RESULTS_PATH",
+            "/tmp/contracts",
+        );
+    let vk_path = run_info
+        .env_or(
+            "VERIFYING_KEY_PATH",
+            "/tmp/input",
+        );
 
     let mut client_config: ClientCfg =
         ClientCfg::new("local".to_string(), vk_path.to_owned());
