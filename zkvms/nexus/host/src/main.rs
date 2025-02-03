@@ -28,7 +28,7 @@ fn main() {
                 .expect("failed to prove program");
 
             println!(
-                " output is {}!",
+                " output is {:?}!",
                 proof
                 .output::<Output>()
                 .expect("failed to deserialize output")
@@ -43,7 +43,7 @@ fn main() {
                 .expect("failed to prove program");
 
             println!(
-                " output is {}!",
+                " output is {:?}!",
                 proof
                 .output::<Output>()
                 .expect("failed to deserialize output")
