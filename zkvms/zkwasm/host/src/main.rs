@@ -1,13 +1,36 @@
-use zkvms_host_io::{Input, foreach_input_field, read_args, RunType::{Execute, Prove, Verify}};
+use zkvms_host_io::{PublicInput, PrivateInput, foreach_public_input_field, foreach_private_input_field, read_args, RunType::{Execute, Prove, Verify}};
 use std::io::{self, Write};
 use std::process::{Command, Stdio};
 use regex::Regex;
 
-fn build_input(input: &Input) -> String {
+fn build_public_input(input: &PublicInput) -> String {
     let numreg: Regex = Regex::new("(?:^|[^A-Za-z])([0-9]+)").unwrap();
 
     let mut ret = String::new();
-    foreach_input_field!{
+    foreach_public_input_field!{
+        let flat = format!("{:?}", input.yield)
+            .replace("false", "0")
+            .replace("true",  "1");
+
+        let numbers: Vec<&str> = numreg
+            .captures_iter(&flat)
+            .map(|cap| cap.get(1).unwrap().as_str())
+            .collect();
+
+        for num in numbers {
+            ret.push_str(num);
+            ret.push_str(":i64,");
+        }
+    }
+    ret.pop(); // removes trailing comma
+    ret
+}
+
+fn build_private_input(input: &PrivateInput) -> String {
+    let numreg: Regex = Regex::new("(?:^|[^A-Za-z])([0-9]+)").unwrap();
+
+    let mut ret = String::new();
+    foreach_private_input_field!{
         let flat = format!("{:?}", input.yield)
             .replace("false", "0")
             .replace("true",  "1");
@@ -58,7 +81,8 @@ fn main() {
         .arg("-k").arg(k)
         .arg("--scheme").arg(scheme));
 
-    let input = build_input(&run_info.input);
+    let public_input = build_public_input(&run_info.public_input);
+    let private_input = build_private_input(&run_info.private_input);
 
     let output = run_info
         .env_or(
@@ -75,17 +99,20 @@ fn main() {
     match run_info.run_type {
         Execute => {
             run(zkwasm_command("dry-run")
-                .arg("--private").arg(input)
+                .arg("--public").arg(public_input)
+                .arg("--private").arg(private_input)
                 .arg("--output").arg(output));
         },
         Prove => {
             run(zkwasm_command("prove")
-                .arg("--private").arg(input)
+                .arg("--public").arg(public_input)
+                .arg("--private").arg(private_input)
                 .arg("--output").arg(output));
         },
         Verify => {
             run(zkwasm_command("prove")
-                .arg("--private").arg(input)
+                .arg("--public").arg(public_input)
+                .arg("--private").arg(private_input)
                 .arg("--output").arg(output.clone()));
 
             run(Command::new("zkwasm-cli")
