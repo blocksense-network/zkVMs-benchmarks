@@ -31,6 +31,8 @@ pub enum RunType {
 pub struct RunWith {
     pub run_type: RunType,
     pub input: Input,
+    pub public_input: PublicInput,
+    pub private_input: PrivateInput,
     pub default_env: HashMap<String, String>,
 }
 
@@ -66,13 +68,17 @@ pub fn read_args() -> RunWith {
         } else {
             DEFAULT_PRIVATE_INPUT.to_string()
         };
-    let input: Input = toml::from_str(&(public_contents + &private_contents)).unwrap();
+    let input: Input = toml::from_str(&(public_contents.clone() + &private_contents)).unwrap();
+    let public_input: PublicInput = toml::from_str(&public_contents).unwrap();
+    let private_input: PrivateInput = toml::from_str(&private_contents).unwrap();
 
     let default_env = read_str(DEFAULT_ENV).unwrap();
 
     RunWith {
         run_type: cli.run_type,
         input,
+        public_input,
+        private_input,
         default_env,
     }
 }

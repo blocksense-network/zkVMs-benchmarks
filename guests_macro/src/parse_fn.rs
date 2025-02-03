@@ -79,6 +79,15 @@ pub fn args_split(item: &TokenStream) -> Vec<TokenStream> {
 }
 
 /// Input:  "(p1 : t1, p2: t2, ...)"
+/// Output: vec!["p1 : t1", "p2: t2", ...]
+pub fn args_split_public(item: &TokenStream, public: &Vec<&String>) -> Vec<TokenStream> {
+    args_split(item)
+        .into_iter()
+        .filter(|a| public.iter().any(|x| a.to_string().starts_with(*x)))
+        .collect()
+}
+
+/// Input:  "(p1 : t1, p2: t2, ...)"
 /// Output: vec![p1, p2, ...], vec![t1, t2, ...]
 pub fn args_divide(item: &TokenStream) -> (Vec<TokenStream>, Vec<TokenStream>) {
     let contents;
