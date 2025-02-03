@@ -28,7 +28,7 @@ pub fn generate_output_type_input_struct(_: TokenStream) -> TokenStream {
 
     let all_args = args_split(&args);
 
-    let mut struct_def = "#[derive(Debug, Serialize, Deserialize)] pub struct Input {".to_string();
+    let mut struct_def = "#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)] pub struct Input {".to_string();
     for arg in all_args {
         struct_def += &format!("pub {arg},");
     }

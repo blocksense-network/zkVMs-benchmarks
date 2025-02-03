@@ -28,14 +28,14 @@ pub enum RunType {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct RunWith<T> {
+pub struct RunWith {
     pub run_type: RunType,
-    pub input: T,
+    pub input: Input,
     pub default_env: HashMap<String, String>,
 }
 
-impl<T> RunWith<T> {
-    pub fn env_then_or<U>(&self, variable_name: &str, then_apply: fn(String) -> Option<U>, else_const: U) -> U {
+impl RunWith {
+    pub fn env_then_or<T>(&self, variable_name: &str, then_apply: fn(String) -> Option<T>, else_const: T) -> T {
         env::var(variable_name)
             .ok()
             .and_then(then_apply)
@@ -53,7 +53,7 @@ impl<T> RunWith<T> {
 
 input_macros::generate_output_type_input_struct!();
 
-pub fn read_args() -> RunWith<Input> {
+pub fn read_args() -> RunWith {
     let cli = Cli::parse();
 
     let public_contents: String = if cli.public_input.is_some() {
