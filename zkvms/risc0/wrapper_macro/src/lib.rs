@@ -18,15 +18,14 @@ pub fn make_wrapper(item: TokenStream) -> TokenStream {
             include_str!(concat!(env!("INPUTS_DIR"), "/default_public_input.toml"))
         )
         .unwrap();
-    let public_patterns = args_divide_public(&args, &public_inputs.keys().collect())
-        .0
-        .iter()
-        .map(|x| x.to_string() + ".clone(), ")
-        .collect::<String>();
+    let public_patterns = args_divide_public(&args, &public_inputs.keys().collect()).0;
+    for pattern in public_patterns.iter() {
+        out.extend(format!("commit(&{});", pattern).parse::<TokenStream>());
+    }
 
     let (ts_patterns, _) = args_divide_grouped(&args);
 
-    out.extend(format!("commit(&({} zkp::{}{}));", public_patterns, name, ts_patterns).parse::<TokenStream>());
+    out.extend(format!("commit(&zkp::{}{});", name, ts_patterns).parse::<TokenStream>());
 
     let mut block = TokenStream::new();
     block.extend(format!("{{ {} }}", out).parse::<TokenStream>());
