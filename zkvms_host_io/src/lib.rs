@@ -6,6 +6,7 @@ use std::{env, option::Option, fs::read_to_string, collections::HashMap};
 pub use input_macros::foreach_input_field;
 
 static DEFAULT_PUBLIC_INPUT: &str = include_str!(concat!(env!("INPUTS_DIR"), "/default_public_input.toml"));
+static DEFAULT_PRIVATE_INPUT: &str = include_str!(concat!(env!("INPUTS_DIR"), "/default_private_input.toml"));
 static DEFAULT_ENV: &str = include_str!(concat!(env!("INPUTS_DIR"), "/default.env"));
 
 #[derive(Parser, Debug)]
@@ -13,6 +14,8 @@ static DEFAULT_ENV: &str = include_str!(concat!(env!("INPUTS_DIR"), "/default.en
 struct Cli {
     /// What the ZKVM is going to do
     run_type: RunType,
+
+    private_input: Option<String>,
 
     public_input: Option<String>,
 }
@@ -53,12 +56,17 @@ input_macros::generate_output_type_input_struct!();
 pub fn read_args() -> RunWith<Input> {
     let cli = Cli::parse();
 
-    let contents: String = if cli.public_input.is_some() {
+    let public_contents: String = if cli.public_input.is_some() {
             read_to_string(cli.public_input.unwrap()).unwrap()
         } else {
             DEFAULT_PUBLIC_INPUT.to_string()
         };
-    let input: Input = toml::from_str(&contents).unwrap();
+    let private_contents: String = if cli.private_input.is_some() {
+            read_to_string(cli.private_input.unwrap()).unwrap()
+        } else {
+            DEFAULT_PRIVATE_INPUT.to_string()
+        };
+    let input: Input = toml::from_str(&(public_contents + &private_contents)).unwrap();
 
     let default_env = read_str(DEFAULT_ENV).unwrap();
 
