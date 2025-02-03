@@ -67,6 +67,8 @@ in {
     '';
 
     buildGuestPhase = ''
+      export INPUTS_DIR="$PWD/guests/${guest}"
+
       pushd zkvms/${args.pname}/guest
       runHook preBuildGuest
 
