@@ -79,12 +79,19 @@ pub fn args_split(item: &TokenStream) -> Vec<TokenStream> {
 }
 
 /// Input:  "(p1 : t1, p2: t2, ...)"
-/// Output: vec!["p1 : t1", "p2: t2", ...]
-pub fn args_split_public(item: &TokenStream, public: &Vec<&String>) -> Vec<TokenStream> {
-    args_split(item)
+/// Output: vec!["p1 : t1", "p2: t2", ...], vec!["p1 : t1", "p2: t2", ...]
+pub fn args_split_public(item: &TokenStream, public: &Vec<&String>) -> (Vec<TokenStream>, Vec<TokenStream>) {
+    let all_args = args_split(item);
+    let public_args: Vec<TokenStream> = all_args
+        .clone()
         .into_iter()
         .filter(|a| public.iter().any(|x| a.to_string().starts_with(*x)))
-        .collect()
+        .collect();
+    let private_args: Vec<TokenStream> = all_args
+        .into_iter()
+        .filter(|t| !public_args.iter().any(|pt| *t.to_string() == pt.to_string()))
+        .collect();
+    (public_args, private_args)
 }
 
 /// Input:  "(p1 : t1, p2: t2, ...)"
@@ -139,14 +146,23 @@ pub fn args_divide(item: &TokenStream) -> (Vec<TokenStream>, Vec<TokenStream>) {
 }
 
 /// Input:  "(p1 : t1, p2: t2, ...)"
-/// Output: vec![p1, p2, ...], vec![t1, t2, ...]
-pub fn args_divide_public(item: &TokenStream, public: &Vec<&String>) -> (Vec<TokenStream>, Vec<TokenStream>) {
+/// Output: (vec![p1, p2, ...], vec![t1, t2, ...]), (vec![p1, p2, ...], vec![t1, t2, ...])
+pub fn args_divide_public(item: &TokenStream, public: &Vec<&String>) -> ((Vec<TokenStream>, Vec<TokenStream>), (Vec<TokenStream>, Vec<TokenStream>)) {
     let (patterns, types) = args_divide(item);
-    patterns
+
+    let (public_patterns, public_types): (Vec<TokenStream>, Vec<TokenStream>) = patterns
+        .clone()
+        .into_iter()
+        .zip(types.clone().into_iter())
+        .filter(|(p, _)| public.iter().any(|x| p.to_string() == **x))
+        .unzip();
+
+    let (private_patterns, private_types): (Vec<TokenStream>, Vec<TokenStream>) = patterns
         .into_iter()
         .zip(types.into_iter())
-        .filter(|(p, _)| public.iter().any(|x| p.to_string() == **x))
-        .unzip()
+        .filter(|(p, _)| !public_patterns.iter().any(|x| p.to_string() == x.to_string()))
+        .unzip();
+    ((public_patterns, public_types), (private_patterns, private_types))
 }
 
 /// Input:  "(p1 : t1, p2: t2, ...)"

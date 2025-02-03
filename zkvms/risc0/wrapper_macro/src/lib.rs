@@ -18,7 +18,7 @@ pub fn make_wrapper(item: TokenStream) -> TokenStream {
             include_str!(concat!(env!("INPUTS_DIR"), "/default_public_input.toml"))
         )
         .unwrap();
-    let public_patterns = args_divide_public(&args, &public_inputs.keys().collect()).0;
+    let public_patterns = args_divide_public(&args, &public_inputs.keys().collect()).0.0;
     for pattern in public_patterns.iter() {
         out.extend(format!("commit(&{});", pattern).parse::<TokenStream>());
     }

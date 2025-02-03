@@ -17,7 +17,7 @@ pub fn make_wrapper(item: TokenStream) -> TokenStream {
             include_str!(concat!(env!("INPUTS_DIR"), "/default_public_input.toml"))
         )
         .unwrap();
-    let (public_patterns, public_types) = args_divide_public(&args, &public_inputs.keys().collect());
+    let (public_patterns, public_types) = args_divide_public(&args, &public_inputs.keys().collect()).0;
     let public_patterns: Vec<(TokenStream, TokenStream)> = public_patterns
         .into_iter()
         .zip(public_types.into_iter())

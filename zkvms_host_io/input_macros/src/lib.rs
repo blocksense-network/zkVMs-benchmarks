@@ -23,27 +23,27 @@ pub fn generate_output_type_input_struct(_: TokenStream) -> TokenStream {
         )
         .unwrap();
     let public_types = args_divide_public(&args, &public_inputs.keys().collect())
+        .0
         .1
         .iter()
         .map(|x| x.to_string() + ", ")
         .collect::<String>();
     let output_type = format!("pub type Output = ({} {});", public_types, ret).to_string();
 
-    let all_args = args_split(&args);
-
-    let public_args = args_split_public(&args, &public_inputs.keys().collect());
+    let (public_args, private_args) = args_split_public(&args, &public_inputs.keys().collect());
     let public_attrs = public_args
         .iter()
         .map(|x| format!("pub {x},"))
         .collect::<String>();
     let public_input_type = format!("{} pub struct PublicInput {{ {} }}", DERIVES, public_attrs).to_string();
 
-    let private_attrs = all_args
+    let private_attrs = private_args
         .iter()
-        .filter(|t| !public_args.iter().any(|pt| *t.to_string() == pt.to_string()))
         .map(|x| format!("pub {x},"))
         .collect::<String>();
     let private_input_type = format!("{} pub struct PrivateInput {{ {} }}", DERIVES, private_attrs).to_string();
+
+    let all_args = args_split(&args);
 
     let mut struct_def = format!("{} pub struct Input {{", DERIVES);
     for arg in all_args {
