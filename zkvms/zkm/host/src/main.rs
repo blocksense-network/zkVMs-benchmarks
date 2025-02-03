@@ -93,13 +93,18 @@ async fn main() -> Result<()> {
 
     // Set input
     let mut public_inputstream = Vec::new();
-    bincode::serialize_into(&mut public_inputstream, &run_info.input)
+    bincode::serialize_into(&mut public_inputstream, &run_info.public_input)
+        .expect("public_input serialization failed");
+
+    let mut private_inputstream = Vec::new();
+    bincode::serialize_into(&mut private_inputstream, &run_info.private_input)
         .expect("private_input serialization failed");
 
     let mut prover_input = ProverInput {
         elf: read(elf_path).unwrap(),
         seg_size,
         public_inputstream,
+        private_inputstream,
         ..Default::default()
     };
 
