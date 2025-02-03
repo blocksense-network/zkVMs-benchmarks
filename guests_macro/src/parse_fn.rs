@@ -130,6 +130,17 @@ pub fn args_divide(item: &TokenStream) -> (Vec<TokenStream>, Vec<TokenStream>) {
 }
 
 /// Input:  "(p1 : t1, p2: t2, ...)"
+/// Output: vec![p1, p2, ...], vec![t1, t2, ...]
+pub fn args_divide_public(item: &TokenStream, public: &Vec<&String>) -> (Vec<TokenStream>, Vec<TokenStream>) {
+    let (patterns, types) = args_divide(item);
+    patterns
+        .into_iter()
+        .zip(types.into_iter())
+        .filter(|(p, _)| public.iter().any(|x| p.to_string() == **x))
+        .unzip()
+}
+
+/// Input:  "(p1 : t1, p2: t2, ...)"
 /// Output: "(p1, p2, ...)", "(t1, t2, ...)"
 pub fn args_divide_grouped(item: &TokenStream) -> (TokenStream, TokenStream) {
     let (patterns, types) = args_divide(&item);

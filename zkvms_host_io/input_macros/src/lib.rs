@@ -2,7 +2,7 @@ use proc_macro::TokenStream;
 
 #[path = "../../../guests_macro/src/parse_fn.rs"]
 mod parse_fn;
-use crate::parse_fn::{ args_split, args_divide, group_streams };
+use crate::parse_fn::{ args_split, args_divide, args_divide_public, group_streams };
 
 fn get_types() -> (TokenStream, TokenStream) {
     let types: Vec<&str> = include_str!("../../../guests/type.txt")
@@ -14,22 +14,17 @@ fn get_types() -> (TokenStream, TokenStream) {
 #[proc_macro]
 pub fn generate_output_type_input_struct(_: TokenStream) -> TokenStream {
     let (args, ret) = get_types();
-    let (patterns, types) = args_divide(&args);
 
-    let mut patterns = patterns
-        .iter()
-        .map(|x| x.to_string());
     let public_inputs = toml::from_str::<toml::Table>(
             include_str!(concat!(env!("INPUTS_DIR"), "/default_public_input.toml"))
         )
         .unwrap();
-    let mut commitment = String::new();
-    for input in public_inputs.keys() {
-        if let Some(index) = patterns.clone().position(|x| x == *input) {
-            commitment += &format!("{}, ", types[index]);
-        }
-    }
-    let output_type = format!("pub type Output = ({} {});", commitment, ret).to_string();
+    let public_types = args_divide_public(&args, &public_inputs.keys().collect())
+        .1
+        .iter()
+        .map(|x| x.to_string() + ", ")
+        .collect::<String>();
+    let output_type = format!("pub type Output = ({} {});", public_types, ret).to_string();
 
     let all_args = args_split(&args);
 
