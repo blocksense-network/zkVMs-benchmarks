@@ -14,7 +14,22 @@ fn get_types() -> (TokenStream, TokenStream) {
 #[proc_macro]
 pub fn generate_output_type_input_struct(_: TokenStream) -> TokenStream {
     let (args, ret) = get_types();
-    let output_type = format!("pub type Output = {};", ret).to_string();
+    let (patterns, types) = args_divide(&args);
+
+    let mut patterns = patterns
+        .iter()
+        .map(|x| x.to_string());
+    let public_inputs = toml::from_str::<toml::Table>(
+            include_str!(concat!(env!("INPUTS_DIR"), "/default_public_input.toml"))
+        )
+        .unwrap();
+    let mut commitment = String::new();
+    for input in public_inputs.keys() {
+        if let Some(index) = patterns.clone().position(|x| x == *input) {
+            commitment += &format!("{}, ", types[index]);
+        }
+    }
+    let output_type = format!("pub type Output = ({} {});", commitment, ret).to_string();
 
     let all_args = args_split(&args);
 
