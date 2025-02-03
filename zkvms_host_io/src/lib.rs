@@ -3,7 +3,7 @@ use num_traits::NumCast;
 use serde::{ Serialize, Deserialize };
 use env_file_reader::read_str;
 use std::{env, option::Option, fs::read_to_string, collections::HashMap};
-pub use input_macros::foreach_input_field;
+pub use input_macros::{ foreach_input_field, foreach_public_input_field, foreach_private_input_field };
 
 static DEFAULT_PUBLIC_INPUT: &str = include_str!(concat!(env!("INPUTS_DIR"), "/default_public_input.toml"));
 static DEFAULT_PRIVATE_INPUT: &str = include_str!(concat!(env!("INPUTS_DIR"), "/default_private_input.toml"));

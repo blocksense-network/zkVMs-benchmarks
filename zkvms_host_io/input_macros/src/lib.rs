@@ -65,16 +65,46 @@ pub fn generate_output_type_input_struct(_: TokenStream) -> TokenStream {
     (output_type + &public_input_type + &private_input_type + &struct_def).parse::<TokenStream>().unwrap()
 }
 
+fn foreach_field(item: TokenStream, fields: Vec<TokenStream>) -> TokenStream {
+    let expr = format!("{}", item);
+    let mut out = String::new();
+    for field in fields {
+        // Unquoted yield is a keyword, so it is not allowed as field name
+        out += &expr.replace(".yield", &format!(".{field}"));
+    }
+    out.parse::<TokenStream>().unwrap()
+}
+
 #[proc_macro]
 pub fn foreach_input_field(item: TokenStream) -> TokenStream {
     let (args, _) = get_types();
     let arg_patterns = args_divide(&args).0;
 
-    let expr = format!("{}", item);
-    let mut out = String::new();
-    for field in arg_patterns {
-        // Unquoted yield is a keyword, so it is not allowed as field name
-        out += &expr.replace(".yield", &format!(".{field}"));
-    }
-    out.parse::<TokenStream>().unwrap()
+    foreach_field(item, arg_patterns)
+}
+
+#[proc_macro]
+pub fn foreach_public_input_field(item: TokenStream) -> TokenStream {
+    let (args, _) = get_types();
+
+    let public_inputs = toml::from_str::<toml::Table>(
+            include_str!(concat!(env!("INPUTS_DIR"), "/default_public_input.toml"))
+        )
+        .unwrap();
+    let public_patterns = args_divide_public(&args, &public_inputs.keys().collect()).0.0;
+
+    foreach_field(item, public_patterns)
+}
+
+#[proc_macro]
+pub fn foreach_private_input_field(item: TokenStream) -> TokenStream {
+    let (args, _) = get_types();
+
+    let public_inputs = toml::from_str::<toml::Table>(
+            include_str!(concat!(env!("INPUTS_DIR"), "/default_public_input.toml"))
+        )
+        .unwrap();
+    let private_patterns = args_divide_public(&args, &public_inputs.keys().collect()).1.0;
+
+    foreach_field(item, private_patterns)
 }
