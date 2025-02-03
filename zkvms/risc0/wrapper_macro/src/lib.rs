@@ -14,9 +14,18 @@ pub fn make_wrapper(item: TokenStream) -> TokenStream {
         out.extend(format!("let {} = read();", arg).parse::<TokenStream>());
     }
 
+    let public_inputs = toml::from_str::<toml::Table>(
+            include_str!(concat!(env!("INPUTS_DIR"), "/default_public_input.toml"))
+        )
+        .unwrap();
+    let mut commitment = String::new();
+    for input in public_inputs.keys() {
+        commitment += &format!("{}.clone(), ", input);
+    }
+
     let (ts_patterns, _) = args_divide_grouped(&args);
 
-    out.extend(format!("commit(&zkp::{}{});", name, ts_patterns).parse::<TokenStream>());
+    out.extend(format!("commit(&({} zkp::{}{}));", commitment, name, ts_patterns).parse::<TokenStream>());
 
     let mut block = TokenStream::new();
     block.extend(format!("{{ {} }}", out).parse::<TokenStream>());

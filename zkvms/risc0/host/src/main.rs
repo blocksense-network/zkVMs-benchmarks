@@ -1,4 +1,4 @@
-use zkvms_host_io::{Input, foreach_input_field, read_args, RunType::{ Execute, Prove, Verify }};
+use zkvms_host_io::{Input, Output, foreach_input_field, read_args, RunType::{ Execute, Prove, Verify }};
 use risc0_zkvm::{default_prover, default_executor, ExecutorEnv, Receipt};
 use risc0_zkp::core::digest::Digest;
 use hex::FromHex;
@@ -23,7 +23,7 @@ fn prove(env: ExecutorEnv) -> Receipt {
         .receipt
 }
 
-fn journal(receipt: Receipt) -> bool {
+fn journal(receipt: Receipt) -> Output {
     receipt
         .journal
         .decode()
