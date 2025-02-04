@@ -22,22 +22,12 @@ fn write(value: u64) {
 static VERTICES: u64 = 10;
 
 macro_rules! read {
-    // HACK for graph_coloring
-    (Vec , u32 $readfn:tt) => {
-        {
-            let mut ret = Vec::new();
-            for _ in 0..2 {
-                ret.push(read!(u32 $readfn));
-            }
-            ret
-        }
-    };
     // Vec<Vec<...<Vec<primitive>>>> is converted by entrypoint_expr! to
     // Vec,Vec,...,Vec,primitive
-    (Vec , $($type:tt)*) => {
+    (Vec $size:literal , $($type:tt)*) => {
         {
             let mut ret = Vec::new();
-            for _ in 0..VERTICES {
+            for _ in 0..$size {
                 ret.push(read!($($type)*));
             }
             ret
