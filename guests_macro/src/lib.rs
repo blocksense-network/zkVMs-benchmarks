@@ -8,8 +8,8 @@ pub fn proving_entrypoint(_: TokenStream, mut item: TokenStream) -> TokenStream 
 
     // Put the file in zkVMs-benchmarks/guests/
     let mut output = File::create("../type.txt").unwrap();
-    writeln!(output, "{}", args);
-    write!(output, "{}", ret);
+    writeln!(output, "{}", &format!("{args}").replace('\n', " "));
+    write!(output, "{}", &format!("{ret}").replace('\n', " "));
 
     item.extend(format!("#[macro_export]
         macro_rules! entrypoint_expr {{
