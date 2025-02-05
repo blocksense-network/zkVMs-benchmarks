@@ -52,19 +52,24 @@ pub fn args_split(item: &TokenStream) -> Vec<TokenStream> {
         contents = group.stream().into_iter();
     }
     else {
-        unreachable!();
+        unreachable!("Item passed to args_split is not a group: \"{item}\"");
     }
 
     let mut args = Vec::new();
     let mut ts = TokenStream::new();
+    let mut angle_level = 0;
 
     for tt in contents {
         match tt {
-            TokenTree::Punct(ref punct) =>
-                if punct.as_char() == ',' {
-                    args.push(ts);
-                    ts = TokenStream::new();
-                    continue;
+            TokenTree::Punct(ref punct) => match punct.as_char() {
+                    '<' => angle_level += 1,
+                    '>' => angle_level -= 1,
+                    ',' => if angle_level == 0 {
+                        args.push(ts);
+                        ts = TokenStream::new();
+                        continue;
+                    },
+                    _ => {},
                 },
             _ => {},
         }
@@ -109,6 +114,7 @@ pub fn args_divide(item: &TokenStream) -> (Vec<TokenStream>, Vec<TokenStream>) {
     let mut types = Vec::new();
     let mut ts = TokenStream::new();
     let mut ignore_next = false;
+    let mut angle_level = 0;
 
     for tt in contents {
         match tt {
@@ -118,12 +124,14 @@ pub fn args_divide(item: &TokenStream) -> (Vec<TokenStream>, Vec<TokenStream>) {
                 }
                 else if !ignore_next {
                     match punct.as_char() {
+                        '<' => angle_level += 1,
+                        '>' => angle_level -= 1,
                         ':' => {
                             patterns.push(ts);
                             ts = TokenStream::new();
                             continue;
                         },
-                        ',' => {
+                        ',' => if angle_level == 0 {
                             types.push(ts);
                             ts = TokenStream::new();
                             continue;
