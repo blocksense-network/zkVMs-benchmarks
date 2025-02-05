@@ -100,6 +100,14 @@ fn return_vec(readfn: &TokenTree, size: &TokenTree, inner: &TokenStream) -> Toke
     ").parse().unwrap()
 }
 
+fn return_tuple(readfn: &TokenTree, inner: &TokenStream) -> TokenStream {
+    let mut value = String::new();
+    for subtype in inner.clone().into_iter() {
+        value += &format!("read!({readfn} {subtype}), ");
+    }
+    format!("( {value} )").parse().unwrap()
+}
+
 #[proc_macro]
 pub fn read(item: TokenStream) -> TokenStream {
     let mut parts = item.clone().into_iter();
@@ -136,25 +144,28 @@ pub fn read(item: TokenStream) -> TokenStream {
                 unreachable!("{group} is not a TokenTree::Group!");
             }
         },
-        // Array
+        // Array or tuple
         TokenTree::Group(group) => {
             let mut group = group.stream().into_iter();
             let mut inner = TokenStream::new();
-            loop {
-                let current = group.next().unwrap();
+            while let Some(current) = group.next() {
                 match current {
-                    TokenTree::Punct(punct) => if punct.as_char() == ';' {
-                            break;
-                        } else {
-                            unreachable!();
+                    TokenTree::Punct(punct) => match punct.as_char() {
+                        // Array
+                        ';' => {
+                            let size = group.next().unwrap();
+                            return return_array(&readfn, &size, &inner);
                         },
+                        // Tuple
+                        ',' => continue,
+                        _ => unreachable!("Group contains unexpected \"{punct}\""),
+                    },
                     TokenTree::Ident(_) | TokenTree::Group(_) =>
                         inner.extend([current].into_iter()),
                     _ => unreachable!(),
                 }
             }
-            let size = group.next().unwrap();
-            return_array(&readfn, &size, &inner)
+            return_tuple(&readfn, &inner)
         },
         _ => unreachable!(),
     }
