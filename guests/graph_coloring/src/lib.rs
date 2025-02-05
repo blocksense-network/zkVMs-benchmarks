@@ -9,7 +9,7 @@ use alloc::vec::Vec;
 pub fn main(
     graph: Vec<Vec<bool>>,
     colors: u32,
-    coloring: Vec<Vec<u32>>,
+    coloring: Vec<[u32; 2]>,
 ) -> bool {
     // Does it use the correct amount of colors?
     let mut max_color = coloring[0][1];
