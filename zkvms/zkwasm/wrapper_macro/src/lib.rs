@@ -76,6 +76,26 @@ fn return_bool(readfn: &TokenTree) -> TokenStream {
     ").parse().unwrap()
 }
 
+fn return_char(readfn: &TokenTree) -> TokenStream {
+    format!("
+        (({readfn}() as u8) as char)
+    ").parse().unwrap()
+}
+
+fn return_string(readfn: &TokenTree) -> TokenStream {
+    format!("
+        {{
+             let mut ret = Vec::new();
+             let mut current_char = read!({readfn} char);
+             while current_char != '\\0' {{
+                 ret.push(current_char);
+                 current_char = read!({readfn} char);
+             }}
+             ret.into_iter().collect()
+        }}
+    ").parse().unwrap()
+}
+
 fn return_array(readfn: &TokenTree, size: &TokenTree, inner: &TokenStream) -> TokenStream {
     format!("
         {{
@@ -118,11 +138,14 @@ pub fn read(item: TokenStream) -> TokenStream {
             match ident.to_string().as_str() {
                 "u8" | "u16" | "u32" | "u64" | "u128" | "usize" |
                 "i8" | "i16" | "i32" | "i64" | "i128" | "isize" |
-                "f32" | "f64" |
-                "char" =>
+                "f32" | "f64" =>
                     return return_primitive(&readfn, &ident),
+                "char" =>
+                    return return_char(&readfn),
                 "bool" =>
                     return return_bool(&readfn),
+                "String" =>
+                    return return_string(&readfn),
                 _ => {},
             }
 
