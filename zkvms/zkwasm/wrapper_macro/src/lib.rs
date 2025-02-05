@@ -28,6 +28,13 @@ fn insert_reads(out: &mut TokenStream, patterns: &Vec<TokenStream>, types: &Vec<
                     value = &array[0];
                     format!("{} [ {} ", typ, array.len())
                 }
+                // STD HashMap
+                else if typ.ends_with("HashMap") {
+                    let array = value.as_table()
+                        .expect("value is of type HashMap but isn't an array");
+                    // value = &array[0];
+                    format!("{} [ {} ", typ, array.len())
+                }
                 else {
                     typ.to_string()
                 })
@@ -120,6 +127,22 @@ fn return_vec(readfn: &TokenTree, size: &TokenTree, inner: &TokenStream) -> Toke
     ").parse().unwrap()
 }
 
+fn return_hashmap(readfn: &TokenTree, size: &TokenTree, inner: &TokenStream) -> TokenStream {
+    let mut inner = inner.clone().into_iter();
+    let key_type = inner.next().unwrap();
+    inner.next().unwrap();
+    let value_type = inner.next().unwrap();
+    format!(r#"
+        {{
+             let mut ret = HashMap::new();
+             for _ in 0..{size} {{
+                 ret.insert(read!({readfn} {key_type}), read!({readfn} {value_type}));
+             }}
+             ret
+        }}
+    "#).parse().unwrap()
+}
+
 fn return_tuple(readfn: &TokenTree, inner: &TokenStream) -> TokenStream {
     let mut value = String::new();
     for subtype in inner.clone().into_iter() {
@@ -160,6 +183,7 @@ pub fn read(item: TokenStream) -> TokenStream {
 
                 match ident.to_string().as_str() {
                     "Vec" => return_vec(&readfn, &size, &rest),
+                    "HashMap" => return_hashmap(&readfn, &size, &rest),
                     _ => todo!("Unsupported container {ident}"),
                 }
             }
