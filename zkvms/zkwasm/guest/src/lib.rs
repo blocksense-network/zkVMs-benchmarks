@@ -3,6 +3,9 @@ use wrapper_macro::{ make_wrapper, read };
 // https://github.com/DelphinusLab/zkWasm-rust/blob/main/src/lib.rs
 use zkwasm_rust_sdk::{require, wasm_input, wasm_output};
 
+#[cfg(not(no_std))]
+use std::collections::*;
+
 fn read_private() -> u64 {
     unsafe { wasm_input(0) }
 }

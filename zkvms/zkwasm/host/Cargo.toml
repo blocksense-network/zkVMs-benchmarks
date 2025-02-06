@@ -5,4 +5,3 @@ edition = "2021"
 
 [dependencies]
 zkvms_host_io = { path = "../../../zkvms_host_io" }
-regex = "1.11.1"

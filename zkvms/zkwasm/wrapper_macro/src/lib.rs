@@ -64,10 +64,9 @@ fn return_string(readfn: &TokenTree) -> TokenStream {
     format!("
         {{
              let mut ret = Vec::new();
-             let mut current_char = read!({readfn} char);
-             while current_char != '\\0' {{
-                 ret.push(current_char);
-                 current_char = read!({readfn} char);
+             let size = read!({readfn} usize);
+             for _ in 0..size {{
+                 ret.push(read!({readfn} char));
              }}
              ret.into_iter().collect()
         }}

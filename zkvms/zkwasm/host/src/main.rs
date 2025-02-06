@@ -1,7 +1,6 @@
 use zkvms_host_io::{PublicInput, PrivateInput, foreach_public_input_field, foreach_private_input_field, read_args, RunType::{Execute, Prove, Verify}, RunWith};
 use std::io::{self, Write};
 use std::process::{Command, Stdio};
-use regex::Regex;
 
 static PUBLIC_INPUT_PATH: &str = "public_input.bin";
 static PRIVATE_INPUT_PATH: &str = "private_input.bin";
@@ -51,9 +50,6 @@ fn get_with_sizes(flat: &str) -> String {
 macro_rules! build_input {
     ($input:expr , $path:ident , $type:ident) => {
         |run_info: &RunWith| {
-            let numreg: Regex = Regex::new("(?:^|[^A-Za-z])([0-9]+)").unwrap();
-            let stringreg: Regex = Regex::new("\\\"[^\"]*\\\"").unwrap();
-
             let mut ret: Vec<u64> = Vec::new();
             $type!{
                 let flat = format!("{:?}", $input.yield)
@@ -62,29 +58,35 @@ macro_rules! build_input {
                     .replace('(', "[")
                     .replace(')', "]")
                     .replace('{', "[")
-                    .replace('{', "]");
+                    .replace('}', "]");
 
                 let flat = get_with_sizes(&flat);
 
-                let numbers = numreg
-                    .captures_iter(&flat)
-                    .map(|cap|
-                        cap.get(1)
-                            .unwrap()
-                            .as_str()
-                            .to_string()
-                            .parse::<u64>()
-                            .unwrap())
+                let values = flat
+                    .replace('[', ",")
+                    .replace(']', " ")
+                    .replace(':', ",")
+                    .split(',')
+                    .map(|val| {
+                        let val = val.trim();
+                        if let Some(num) = val.parse::<u64>().ok() {
+                            vec![num]
+                        }
+                        else {
+                            let val = val.trim_matches('"');
+                            let mut size = vec![val.len() as u64];
+                            size.extend(val
+                                .bytes()
+                                .into_iter()
+                                .map(|x| x as u64)
+                                .collect::<Vec<u64>>());
+                            size
+                        }
+                    })
+                    .flatten()
                     .collect::<Vec<u64>>();
 
-                ret.extend(numbers);
-
-                // let strings: Vec<&str> = stringreg
-                //     .captures_iter(&flat)
-                //     .map(|cap| cap.get(0).unwrap().as_str())
-                //     .collect();
-                //
-                // panic!("{:#?}", strings);
+                ret.extend(values);
             }
             let bytes = ret
                 .iter()
