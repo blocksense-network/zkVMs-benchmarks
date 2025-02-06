@@ -86,27 +86,27 @@ fn return_array(readfn: &TokenTree, inner: &TokenStream) -> TokenStream {
     ").parse().unwrap()
 }
 
-fn return_vec(readfn: &TokenTree, inner: &TokenStream) -> TokenStream {
+fn return_cont(readfn: &TokenTree, container: &Ident, pushfn: &str, inner: &TokenStream) -> TokenStream {
     format!("
         {{
-             let mut ret = Vec::new();
+             let mut ret = {container}::new();
              let size = read!({readfn} usize);
              for _ in 0..size {{
-                 ret.push(read!({readfn} {inner}));
+                 ret.{pushfn}(read!({readfn} {inner}));
              }}
              ret
         }}
     ").parse().unwrap()
 }
 
-fn return_hashmap(readfn: &TokenTree, inner: &TokenStream) -> TokenStream {
+fn return_hashmap(readfn: &TokenTree, container: &Ident, inner: &TokenStream) -> TokenStream {
     let mut inner = inner.clone().into_iter();
     let key_type = inner.next().unwrap();
     inner.next().unwrap();
     let value_type = inner.next().unwrap();
     format!(r#"
         {{
-             let mut ret = HashMap::new();
+             let mut ret = {container}::new();
              let size = read!({readfn} usize);
              for _ in 0..size {{
                  ret.insert(read!({readfn} {key_type}), read!({readfn} {value_type}));
@@ -156,8 +156,15 @@ pub fn read(item: TokenStream) -> TokenStream {
                 let rest = inner_group.stream();
 
                 match ident.to_string().as_str() {
-                    "Vec" => return_vec(&readfn, &rest),
-                    "HashMap" => return_hashmap(&readfn, &rest),
+                    // https://doc.rust-lang.org/std/collections/
+                    "Vec" | "BinaryHeap" =>
+                        return_cont(&readfn, &ident, "push", &rest),
+                    "VecDeque" | "LinkedList" =>
+                        return_cont(&readfn, &ident, "push_back", &rest),
+                    "HashSet" | "BTreeSet" =>
+                        return_cont(&readfn, &ident, "insert", &rest),
+                    "HashMap" | "BTreeMap" =>
+                        return_hashmap(&readfn, &ident, &rest),
                     _ => todo!("Unsupported container {ident}"),
                 }
             }
