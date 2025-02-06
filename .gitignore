@@ -4,3 +4,5 @@ zkp
 output
 params
 type.txt
+public_input.bin
+private_input.bin

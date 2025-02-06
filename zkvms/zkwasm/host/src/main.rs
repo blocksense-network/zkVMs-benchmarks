@@ -1,52 +1,100 @@
-use zkvms_host_io::{PublicInput, PrivateInput, foreach_public_input_field, foreach_private_input_field, read_args, RunType::{Execute, Prove, Verify}};
+use zkvms_host_io::{PublicInput, PrivateInput, foreach_public_input_field, foreach_private_input_field, read_args, RunType::{Execute, Prove, Verify}, RunWith};
 use std::io::{self, Write};
 use std::process::{Command, Stdio};
 use regex::Regex;
 
-fn build_public_input(input: &PublicInput) -> String {
-    let numreg: Regex = Regex::new("(?:^|[^A-Za-z])([0-9]+)").unwrap();
+static PUBLIC_INPUT_PATH: &str = "public_input.bin";
+static PRIVATE_INPUT_PATH: &str = "private_input.bin";
 
-    let mut ret = String::new();
-    foreach_public_input_field!{
-        let flat = format!("{:?}", input.yield)
-            .replace("false", "0")
-            .replace("true",  "1");
+fn get_with_sizes(flat: &str) -> String {
+    let mut values = flat
+        .split('[')
+        .map(|x| x.trim())
+        .skip(1);
+    let current = values
+        .next()
+        .unwrap_or(flat);
 
-        let numbers: Vec<&str> = numreg
-            .captures_iter(&flat)
-            .map(|cap| cap.get(1).unwrap().as_str())
-            .collect();
+    // 1D collection or not a collection
+    if current != "" {
+        let size = 1 + current
+            .clone()
+            .to_string()
+            .chars()
+            .take_while(|x| *x != ']')
+            .map(|x| (x == ',') as usize)
+            .sum::<usize>();
 
-        for num in numbers {
-            ret.push_str(num);
-            ret.push_str(":i64,");
-        }
+        (if size > 1 { size.to_string() } else { String::new() })
+            + "["
+            + current
+            + &values
+                .map(|x| "[".to_string() + x)
+                .collect::<String>()
     }
-    ret.pop(); // removes trailing comma
-    ret
+    // ND collection
+    else {
+        let size: usize = values
+            .clone()
+            .count();
+
+        let subcollections = values
+            .map(|x| get_with_sizes(x))
+            .collect::<String>();
+
+        size.to_string()
+            + "["
+            + &subcollections
+    }
 }
 
-fn build_private_input(input: &PrivateInput) -> String {
-    let numreg: Regex = Regex::new("(?:^|[^A-Za-z])([0-9]+)").unwrap();
+macro_rules! build_input {
+    ($input:expr , $path:ident , $type:ident) => {
+        |run_info: &RunWith| {
+            let numreg: Regex = Regex::new("(?:^|[^A-Za-z])([0-9]+)").unwrap();
+            let stringreg: Regex = Regex::new("\\\"[^\"]*\\\"").unwrap();
 
-    let mut ret = String::new();
-    foreach_private_input_field!{
-        let flat = format!("{:?}", input.yield)
-            .replace("false", "0")
-            .replace("true",  "1");
+            let mut ret: Vec<u64> = Vec::new();
+            $type!{
+                let flat = format!("{:?}", $input.yield)
+                    .replace("false", "0")
+                    .replace("true",  "1")
+                    .replace('(', "[")
+                    .replace(')', "]")
+                    .replace('{', "[")
+                    .replace('{', "]");
 
-        let numbers: Vec<&str> = numreg
-            .captures_iter(&flat)
-            .map(|cap| cap.get(1).unwrap().as_str())
-            .collect();
+                let flat = get_with_sizes(&flat);
 
-        for num in numbers {
-            ret.push_str(num);
-            ret.push_str(":i64,");
+                let numbers = numreg
+                    .captures_iter(&flat)
+                    .map(|cap|
+                        cap.get(1)
+                            .unwrap()
+                            .as_str()
+                            .to_string()
+                            .parse::<u64>()
+                            .unwrap())
+                    .collect::<Vec<u64>>();
+
+                ret.extend(numbers);
+
+                // let strings: Vec<&str> = stringreg
+                //     .captures_iter(&flat)
+                //     .map(|cap| cap.get(0).unwrap().as_str())
+                //     .collect();
+                //
+                // panic!("{:#?}", strings);
+            }
+            let bytes = ret
+                .iter()
+                .map(|x| x.to_be_bytes())
+                .flatten()
+                .collect::<Vec<u8>>();
+            std::fs::write($path, bytes);
+            format!("{}:file", $path)
         }
-    }
-    ret.pop(); // removes trailing comma
-    ret
+    };
 }
 
 fn zkwasm_command(subcmd: &str) -> Command {
@@ -81,8 +129,15 @@ fn main() {
         .arg("-k").arg(k)
         .arg("--scheme").arg(scheme));
 
-    let public_input = build_public_input(&run_info.public_input);
-    let private_input = build_private_input(&run_info.private_input);
+    let public_input = build_input!(
+        run_info.public_input,
+        PUBLIC_INPUT_PATH,
+        foreach_public_input_field)(&run_info);
+
+    let private_input = build_input!(
+        run_info.private_input,
+        PRIVATE_INPUT_PATH,
+        foreach_private_input_field)(&run_info);
 
     let output = run_info
         .env_or(
