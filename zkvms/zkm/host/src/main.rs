@@ -2,7 +2,7 @@ use anyhow::{bail, Result};
 use std::{env, fs::read, time::Instant};
 use zkm_sdk::{prover::ClientCfg, prover::{ProverInput, ProverResult} , ProverClient};
 
-use zkvms_host_io::{read_args, RunType::{ Execute, Prove, Verify }};
+use zkvms_host_io::{read_args, benchmarkable, RunType::{ Execute, Prove, Verify }};
 
 async fn get_proof(
     prover_client: &mut ProverClient,
@@ -111,9 +111,13 @@ async fn main() -> Result<()> {
     let start = Instant::now();
     match run_info.run_type {
         // only excute the guest program without generating the proof.
-        Execute => execute(&mut prover_client, &mut prover_input).await,
+        Execute => benchmarkable!{
+            execute(&mut prover_client, &mut prover_input).await;
+        },
         // excute the guest program and generate the proof
-        Prove => prove(&mut prover_client, &mut prover_input, &vk_path, &proof_results_path).await,
+        Prove => benchmarkable!{
+            prove(&mut prover_client, &mut prover_input, &vk_path, &proof_results_path).await;
+        },
         Verify => unreachable!(),
     }
     let end = Instant::now();
