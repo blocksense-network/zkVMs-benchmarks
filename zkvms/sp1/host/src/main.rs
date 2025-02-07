@@ -1,4 +1,4 @@
-use zkvms_host_io::{Input, foreach_input_field, read_args, RunType::{ Execute, Prove, Verify }};
+use zkvms_host_io::{Input, foreach_input_field, benchmarkable, read_args, RunType::{ Execute, Prove, Verify }};
 use sp1_sdk::{ProverClient, EnvProver, SP1Stdin, SP1ProofWithPublicValues, SP1VerifyingKey};
 
 /// The ELF (executable and linkable format) file for the Succinct RISC-V zkVM.
@@ -29,19 +29,19 @@ fn main() {
     let client = ProverClient::new();
 
     match run_info.run_type {
-        Execute => {
+        Execute => benchmarkable!{
             let (output, report) = client.execute(FIBONACCI_ELF, &stdin).run().unwrap();
 
             println!("Program executed successfully.");
             println!("{:?}", output);
             println!("Number of cycles: {}", report.total_instruction_count());
         },
-        Prove => {
-            let _ = prove(&client, stdin);
+        Prove => benchmarkable!{
+            let _ = prove(&client, stdin.clone());
             println!("Successfully generated proof!");
         },
-        Verify => {
-            let (proof, vk) = prove(&client, stdin);
+        Verify => benchmarkable!{
+            let (proof, vk) = prove(&client, stdin.clone());
             println!("Successfully generated proof!");
 
             client.verify(&proof, &vk).expect("failed to verify proof");
