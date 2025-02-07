@@ -2,5 +2,6 @@
 #![no_main]
 
 use wrapper_macro::make_wrapper;
+use std::collections::*;
 
 zkp::entrypoint_expr!{}
