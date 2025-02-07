@@ -4,6 +4,9 @@ type Input = (Vec<Vec<bool>>, u32, Vec<Vec<u32>>);
 
 pub fn main() {
     let run_info = read_args();
+    if run_info.run_type == Execute {
+        panic!("Execution is not supported!");
+    }
 
     let elf_path = std::env::var("ELF_PATH").expect("ELF PATH is missing");
     let (prove_guest, verify_guest) = guest::guest_closures(elf_path);
