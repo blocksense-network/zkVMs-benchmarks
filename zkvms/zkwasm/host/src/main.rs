@@ -1,4 +1,4 @@
-use zkvms_host_io::{PublicInput, PrivateInput, foreach_public_input_field, foreach_private_input_field, read_args, RunType::{Execute, Prove, Verify}, RunWith};
+use zkvms_host_io::{PublicInput, PrivateInput, foreach_public_input_field, foreach_private_input_field, benchmarkable, read_args, RunType::{Execute, Prove, Verify}, RunWith};
 use std::io::{self, Write};
 use std::process::{Command, Stdio};
 
@@ -154,17 +154,17 @@ fn main() {
         );
 
     match run_info.run_type {
-        Execute => {
+        Execute => benchmarkable!{
             run(zkwasm_command("dry-run")
-                .arg("--public").arg(public_input)
-                .arg("--private").arg(private_input)
-                .arg("--output").arg(output));
+                .arg("--public").arg(public_input.clone())
+                .arg("--private").arg(private_input.clone())
+                .arg("--output").arg(output.clone()));
         },
-        Prove => {
+        Prove => benchmarkable!{
             run(zkwasm_command("prove")
-                .arg("--public").arg(public_input)
-                .arg("--private").arg(private_input)
-                .arg("--output").arg(output));
+                .arg("--public").arg(public_input.clone())
+                .arg("--private").arg(private_input.clone())
+                .arg("--output").arg(output.clone()));
         },
         Verify => {
             run(zkwasm_command("prove")
@@ -172,10 +172,12 @@ fn main() {
                 .arg("--private").arg(private_input)
                 .arg("--output").arg(output.clone()));
 
-            run(Command::new("zkwasm-cli")
-                .arg("--params").arg(params)
-                .arg("prog").arg("verify")
-                .arg("--output").arg(output));
+            benchmarkable!{
+                run(Command::new("zkwasm-cli")
+                    .arg("--params").arg(params.clone())
+                    .arg("prog").arg("verify")
+                    .arg("--output").arg(output.clone()));
+            }
         },
     }
 }
