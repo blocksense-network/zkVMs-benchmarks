@@ -4,6 +4,29 @@ use proc_macro::TokenStream;
 mod parse_fn;
 use crate::parse_fn::{ split_fn, args_split, args_divide_public, args_divide_grouped, group_streams };
 
+/// Create a body, which reads all public and private inputs, stores them in
+/// variables, then executes the guest entrypoint function with those arguments
+/// and commits its output.
+///
+/// `default_public_input.toml` shows which variables are public.
+///
+/// # Usage
+///
+/// Inside ZKM's guest (excluding the `entrypoint_expr` call):
+///
+/// ```rust
+/// make_wrapper!{fn main(...) -> ...}
+/// ```
+///
+/// # Example output
+///
+/// ```rust
+/// {
+///     let (...) : (...) = read(); // Public inputs
+///     let (...) : (...) = read(); // Private inputs
+///     commit::<...>(&zkp::main(..., ..., ...));
+/// }
+/// ```
 #[proc_macro]
 pub fn make_wrapper(item: TokenStream) -> TokenStream {
     let (name, args, ret) = split_fn(&item);

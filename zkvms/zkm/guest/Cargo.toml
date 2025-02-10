@@ -1,5 +1,6 @@
 [package]
 name = "guest"
+description = "ZKM's specific guest crate, which includes the chosen guest in guests"
 version = "0.1.0"
 edition = "2021"
 
@@ -9,3 +10,6 @@ edition = "2021"
 zkm-runtime = { path = "/nix/store/h9s6kmnx7iafllv10wqhjix5kpyfsh37-zkm-unstable-2025-01-05/runtime/entrypoint" }
 
 wrapper_macro = { version = "0.1.0", path = "../wrapper_macro" }
+
+# The zkp dependency references a chosen guest in guests. It is included
+# (inserted here) by Nix. See zkvmLib.nix

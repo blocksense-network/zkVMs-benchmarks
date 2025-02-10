@@ -1,3 +1,8 @@
+This is a copy of [ZKM's project SDK](https://github.com/zkMIPS/zkm-project-template/tree/main/sdk), which changes the zkVM cargo dependencies to point to `/nix/store`.
+It is also used as a convinent place which stores the SDK's `libsnark` (`sdk/src/local/libsnark`), so during compilation it is not fetched from the source repo (refer to `zkvms/zkm/default.nix`).
+
+---
+
 # ZKM SDK usage
 
 ## Use the libsnark

@@ -39,6 +39,7 @@ async fn prove(
 ) {
     prover_input.execute_only = false;
 
+    // As far as I can tell, we cannot evade generating the sol verifier step
     match prover_client
         .setup_and_generate_sol_verifier("local", &vk_path, &prover_input)
         .await
