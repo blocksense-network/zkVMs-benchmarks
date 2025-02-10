@@ -1,5 +1,4 @@
 { zkvmLib,
-  stdenv,
   lib,
   just,
   metacraft-labs,
@@ -8,19 +7,28 @@
   pkg-config,
   openssl,
   buildGoModule,
+  fetchFromGitHub,
   craneLib-default,
 }:
 let
-  zkm_libsnark = buildGoModule {
+  zkm_libsnark = buildGoModule rec {
     pname = "zkm_libsnark";
     version = "0.1.0";
-    src = with lib.fileset; toSource {
-      root = ./sdk/src/local/libsnark;
-      fileset = ./sdk/src/local/libsnark;
+
+    src = fetchFromGitHub {
+      owner = "zkMIPS";
+      repo = "zkm-project-template";
+      sparseCheckout = [ "sdk/src/local/libsnark" ];
+      rev = "155221dfa05daf31d7bfe6b601116ef5a03b82c9";
+      hash = "sha256-6hT7cMD3iXN65SFFgMHIPKzzQ212/uhZNIpjJNZ0Dek=";
     };
+
+    sourceRoot = "${src.name}/sdk/src/local/libsnark";
+
     vendorHash = "sha256-tGajRfJ8G4M89QSiJnjpTzQ3+VA2RLkavD1ipANeOSI=";
 
     buildPhase = "sh ./compile.sh";
+
     installPhase = ''
       mkdir -p "$out"/lib
       mv libsnark.so "$out"/lib/
