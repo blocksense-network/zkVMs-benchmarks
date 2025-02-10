@@ -15,7 +15,7 @@ static DEFAULT_ENV: &str = include_str!(concat!(env!("INPUTS_DIR"), "/default.en
 /// If you want to run or benchmark your own guest program inside a zkVM,
 /// head on over to https://github.com/blocksense-network/zkVMs-benchmarks
 #[derive(Parser, Debug)]
-#[command(version, about, long_about = None)]
+#[command(about, long_about = None)]
 struct Cli {
     /// What should the zkVM do with the guest
     run_type: RunType,
