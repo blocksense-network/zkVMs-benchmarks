@@ -35,34 +35,42 @@ fn main() {
     let run_info = read_args();
 
     match run_info.run_type {
-        Execute => benchmarkable!{
+        Execute => {
             let env = build_env(&run_info.input);
             let exec = default_executor();
-            let output = default_executor()
-                .execute(env, HELLO_GUEST_ELF)
-                .unwrap()
-                .receipt_claim
-                .unwrap()
-                .output
-                .value()
-                .unwrap();
 
-            println!("{:#?}", output);
+            benchmarkable! {
+                let output = default_executor()
+                    .execute(env, HELLO_GUEST_ELF)
+                    .unwrap()
+                    .receipt_claim
+                    .unwrap()
+                    .output
+                    .value()
+                    .unwrap();
+                println!("{:#?}", output);
+            }
         },
-        Prove => benchmarkable!{
+        Prove => {
             let env = build_env(&run_info.input);
-            let receipt = prove(env);
+
+            benchmarkable! {
+                let receipt = prove(env);
+            }
+
             println!("Output from journal: {:?}", journal(receipt));
         },
-        Verify => benchmarkable!{
+        Verify => {
             // https://github.com/risc0/risc0/blob/881e512732eca72849b2d0e263a1242aba3158af/risc0/build/src/lib.rs#L197-L199
             let guest_id: Digest = Digest::from_hex(HELLO_GUEST_ID).unwrap();
 
             let env = build_env(&run_info.input);
             let receipt = prove(env);
-            receipt.verify(guest_id).unwrap();
 
-            println!("Output from verify: {:?}", journal(receipt));
+            benchmarkable! {
+                receipt.verify(guest_id).unwrap();
+                println!("Output from verify: {:?}", journal(receipt));
+            }
         },
     }
 }
