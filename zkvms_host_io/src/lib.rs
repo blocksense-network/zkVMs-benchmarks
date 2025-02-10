@@ -12,25 +12,32 @@ static DEFAULT_ENV: &str = include_str!(concat!(env!("INPUTS_DIR"), "/default.en
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct Cli {
-    /// What the ZKVM is going to do
+    /// ZKVM action (execute, prove, verify)
     run_type: RunType,
 
+    /// Path to private input file in (TOML format)
     private_input: Option<String>,
 
+    /// Path to public input file in (TOML format)
     public_input: Option<String>,
 
+    /// Enable benchmark timer and formatted output
     #[arg(short, long)]
     benchmark: bool,
 
+    /// Benchmark the given action multiple times
     #[arg(short, long, requires = "benchmark")]
     repeat: Option<usize>,
 
+    /// Output timings as milliseconds instead of seconds
     #[arg(short, long, requires = "benchmark")]
     millis: bool,
 
+    /// Put the benchmark's formatted output into a file of the given path
     #[arg(short, long, requires = "benchmark")]
     metrics_output: Option<String>,
 
+    /// Append the benchmark formatted output to the given file, instead of replacing it
     #[arg(short, long, requires = "benchmark")]
     append: bool,
 }
@@ -59,6 +66,14 @@ pub struct RunWith {
 }
 
 impl RunWith {
+    /// Returns a value of the given name from the environment,
+    /// default environment or the given constant, depending on which
+    /// one exists.
+    ///
+    /// If the variable is from either environments, the `then_apply`
+    /// function is executed to convert the String value.
+    ///
+    /// The default environment is taken from the guest's `default.env`
     pub fn env_then_or<T>(&self, variable_name: &str, then_apply: fn(String) -> Option<T>, else_const: T) -> T {
         env::var(variable_name)
             .ok()
@@ -70,6 +85,11 @@ impl RunWith {
                 .unwrap_or(else_const))
     }
 
+    /// Returns a value of the given name from the environment,
+    /// default environment or the given constant, depending on which
+    /// one exists.
+    ///
+    /// The default environment is taken from the guest's `default.env`
     pub fn env_or(&self, variable_name: &str, else_const: &str) -> String {
         self.env_then_or(variable_name, |x| Some(x), else_const.to_string())
     }

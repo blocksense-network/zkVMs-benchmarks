@@ -4,6 +4,8 @@ use proc_macro::TokenStream;
 mod parse_fn;
 use crate::parse_fn::{ args_split, args_split_public, args_divide, args_divide_public, group_streams };
 
+/// Parses the `guests/type.txt` type note, created from the guest
+/// Returns a tuple of the arguments group and the return type
 fn get_types() -> (TokenStream, TokenStream) {
     let types: Vec<&str> = include_str!("../../../guests/type.txt")
         .split('\n')
@@ -13,6 +15,54 @@ fn get_types() -> (TokenStream, TokenStream) {
 
 static DERIVES: &str = "#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]";
 
+/// Creates an Output type def and three Input structures from the guest
+/// type.txt file.
+///
+/// # Usage
+///
+/// Inside zkvms_host_io:
+///
+/// ```rust
+/// input_macros::generate_output_type_input_struct!();
+/// ```
+///
+/// # Example output
+///
+/// ```rust
+/// pub type Output = (... ...);
+///
+/// #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+/// pub struct PublicInput {
+///     pub ...: ...,
+///     pub ...: ...,
+///     ...
+/// }
+///
+/// #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+/// pub struct PrivateInput {
+///     pub ...: ...,
+///     pub ...: ...,
+///     ...
+/// }
+///
+/// #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+/// pub struct Input {
+///     pub ...: ...,
+///     pub ...: ...,
+///     ...
+/// }
+///
+/// // Converts Input to a tuple
+/// impl From<Input> for (...) {
+///     fn from(input: Input) -> (...) {
+///         (
+///             input....,
+///             input....,
+///             ...
+///         )
+///     }
+/// }
+/// ```
 #[proc_macro]
 pub fn generate_output_type_input_struct(_: TokenStream) -> TokenStream {
     let (args, ret) = get_types();
@@ -65,6 +115,8 @@ pub fn generate_output_type_input_struct(_: TokenStream) -> TokenStream {
     (output_type + &public_input_type + &private_input_type + &struct_def).parse::<TokenStream>().unwrap()
 }
 
+/// Repeats the given item as many times as fields there are, while replacing
+/// all `.yield` occurences with the fields value (field name).
 fn foreach_field(item: TokenStream, fields: Vec<TokenStream>) -> TokenStream {
     let expr = format!("{}", item);
     let mut out = String::new();
@@ -75,6 +127,9 @@ fn foreach_field(item: TokenStream, fields: Vec<TokenStream>) -> TokenStream {
     out.parse::<TokenStream>().unwrap()
 }
 
+/// Repeats the given code as many times as fields there are in the Input
+/// struct, while replacing all `.yield` occurences with the concrete
+/// field name.
 #[proc_macro]
 pub fn foreach_input_field(item: TokenStream) -> TokenStream {
     let (args, _) = get_types();
@@ -83,6 +138,9 @@ pub fn foreach_input_field(item: TokenStream) -> TokenStream {
     foreach_field(item, arg_patterns)
 }
 
+/// Repeats the given code as many times as fields there are in the
+/// PublicInput struct, while replacing all `.yield` occurences with the
+/// concrete field name.
 #[proc_macro]
 pub fn foreach_public_input_field(item: TokenStream) -> TokenStream {
     let (args, _) = get_types();
@@ -96,6 +154,9 @@ pub fn foreach_public_input_field(item: TokenStream) -> TokenStream {
     foreach_field(item, public_patterns)
 }
 
+/// Repeats the given code as many times as fields there are in the
+/// PrivateInput struct, while replacing all `.yield` occurences with the
+/// concrete field name.
 #[proc_macro]
 pub fn foreach_private_input_field(item: TokenStream) -> TokenStream {
     let (args, _) = get_types();
@@ -109,6 +170,9 @@ pub fn foreach_private_input_field(item: TokenStream) -> TokenStream {
     foreach_field(item, private_patterns)
 }
 
+/// Assuming the `run_info` variable is present, it creates a block with all
+/// needed code to properly benchmark the input code, according to all command
+/// parameters.
 #[proc_macro]
 pub fn benchmarkable(item: TokenStream) -> TokenStream {
     format!(r#"
