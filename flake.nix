@@ -7,7 +7,7 @@
   };
 
   inputs = {
-    mcl-blockchain.url = "github:metacraft-labs/nix-blockchain-development?ref=zkvm-packages";
+    mcl-blockchain.url = "github:metacraft-labs/nix-blockchain-development";
     nixpkgs.follows = "mcl-blockchain/nixpkgs";
     crane.follows = "mcl-blockchain/crane";
     rust-overlay.follows = "mcl-blockchain/rust-overlay";
