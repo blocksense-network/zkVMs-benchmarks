@@ -56,9 +56,8 @@ fn main() {
 
             benchmarkable! {
                 let receipt = prove(env);
+                println!("Output from journal: {:?}", journal(receipt));
             }
-
-            println!("Output from journal: {:?}", journal(receipt));
         },
         Verify => {
             // https://github.com/risc0/risc0/blob/881e512732eca72849b2d0e263a1242aba3158af/risc0/build/src/lib.rs#L197-L199
