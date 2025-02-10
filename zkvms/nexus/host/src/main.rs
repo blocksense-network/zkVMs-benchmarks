@@ -37,7 +37,7 @@ fn main() {
 
             println!(">>>>> Logging\n{}<<<<<", proof.logs().join(""));
         },
-        Verify => benchmarkable!{
+        Verify => {
             // Nova<T> doesn't derive Clone
             println!("Loading guest...");
             let prover: Nova<Local> = Nova::new_from_file(&elf_path).expect("failed to load guest program");
@@ -56,8 +56,10 @@ fn main() {
 
             println!(">>>>> Logging\n{}<<<<<", proof.logs().join(""));
 
-            print!("Verifying execution...");
-            proof.verify(&pp).expect("failed to verify proof");
+            benchmarkable! {
+                print!("Verifying execution...");
+                proof.verify(&pp).expect("failed to verify proof");
+            }
         },
     }
 }
