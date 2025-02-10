@@ -40,12 +40,14 @@ fn main() {
             let _ = prove(&client, stdin.clone());
             println!("Successfully generated proof!");
         },
-        Verify => benchmarkable!{
+        Verify => {
             let (proof, vk) = prove(&client, stdin.clone());
             println!("Successfully generated proof!");
 
-            client.verify(&proof, &vk).expect("failed to verify proof");
-            println!("Successfully verified proof!");
+            benchmarkable!{
+                client.verify(&proof, &vk).expect("failed to verify proof");
+                println!("Successfully verified proof!");
+            }
         },
     }
 }
