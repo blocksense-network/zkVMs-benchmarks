@@ -6,7 +6,42 @@ use quote::quote;
 mod parse_fn;
 use crate::parse_fn::{ split_fn, args_split, args_divide, group_streams };
 
-
+/// Create a set of three helper functions.
+///
+/// First a function called "guest" with the same arguments and return types
+/// as our specific guest's entrypoint function, which calls the aforementioned
+/// entrypoint function.
+///
+/// In essence, we create a wrapper function around the entrypoint, which also
+/// has the required `jolt::provable` attribute.
+///
+/// Second is a `guests_closure` function, almost identical to Jolt's
+/// `build_guest` function, which takes an already built guest ELF.
+/// Since we're following Jolt's design, it uses a third generated function,
+/// called `preprocess_guest_elf`.
+///
+/// # Usage
+///
+/// Inside Jolt's guest (excluding the `entrypoint_expr` call):
+///
+/// ```rust
+/// make_wrapper!{fn main(...) -> ...}
+/// ```
+///
+/// # Example output
+///
+/// ```rust
+/// #[jolt::provable(max_input_size = 100000)]
+/// fn guest(...) -> ... {
+///     zkp::main(...)
+/// }
+///
+/// #[cfg(all(not(target_arch = "wasm32"), not(feature = "guest")))]
+/// pub fn guest_closures(elf_path: String) -> (...) { ..... }
+///
+/// #[cfg(all(not(target_arch = "wasm32"), not(feature = "guest")))]
+/// pub fn preprocess_guest_elf(elf_path: String) -> (...) { ..... }
+/// ```
 #[proc_macro]
 pub fn make_wrapper(item: TokenStream) -> TokenStream {
     let (name, args, ret) = split_fn(&item);

@@ -1,5 +1,6 @@
 [package]
 name = "guest"
+description = "Jolt's specific guest crate, which includes the chosen guest in guests"
 version = "0.1.0"
 edition = "2021"
 
@@ -11,3 +12,6 @@ path = "./src/lib.rs"
 jolt = { package = "jolt-sdk", path = "/nix/store/q8ix3vj7dw6w57zhjc9wa38vicymql0g-jolt-unstable-2024-12-18/jolt-sdk", features = ["guest-std"] }
 
 wrapper_macro = { version = "0.1.0", path = "../wrapper_macro" }
+
+# The zkp dependency references a chosen guest in guests. It is included
+# (inserted here) by Nix. See zkvmLib.nix
