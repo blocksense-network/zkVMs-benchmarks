@@ -114,7 +114,7 @@ pub fn benchmarkable(item: TokenStream) -> TokenStream {
     format!(r#"
         {{
              use std::time::Instant;
-             use std::fs::File;
+             use std::fs::OpenOptions;
              use std::io::Write;
 
              let mut starts = Vec::new();
@@ -148,7 +148,12 @@ pub fn benchmarkable(item: TokenStream) -> TokenStream {
                  output += &format!("repeats,{{}}\naverage,{{average}}\n", run_info.repeats);
 
                  if let Some(file) = run_info.output_file {{
-                     let mut outfile = File::create(file).unwrap();
+                     let mut outfile = OpenOptions::new()
+                         .write(true)
+                         .create(true)
+                         .append(run_info.append)
+                         .open(file)
+                         .unwrap();
                      write!(outfile, "{{}}", output);
                  }}
                  else {{

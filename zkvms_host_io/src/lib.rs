@@ -30,6 +30,9 @@ struct Cli {
 
     #[arg(short, long, requires = "benchmark")]
     metrics_output: Option<String>,
+
+    #[arg(short, long, requires = "benchmark")]
+    append: bool,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
@@ -46,6 +49,7 @@ pub struct RunWith {
     pub repeats: usize,
     pub millis: bool,
     pub output_file: Option<String>,
+    pub append: bool,
 
     pub input: Input,
     pub public_input: PublicInput,
@@ -98,6 +102,7 @@ pub fn read_args() -> RunWith {
         repeats: cli.repeat.unwrap_or(1),
         millis: cli.millis,
         output_file: cli.metrics_output,
+        append: cli.append,
 
         input,
         public_input,
