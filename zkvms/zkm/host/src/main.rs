@@ -87,8 +87,11 @@ async fn main() -> Result<()> {
             "/tmp/input",
         );
 
-    let mut client_config: ClientCfg =
-        ClientCfg::new("local".to_string(), vk_path.to_owned());
+    let mut client_config: ClientCfg = ClientCfg {
+        zkm_prover: "local".to_string(),
+        vk_path: vk_path.to_owned(),
+        ..Default::default()
+    };
 
     let mut prover_client = ProverClient::new(&client_config).await;
 
@@ -103,10 +106,10 @@ async fn main() -> Result<()> {
 
     let mut prover_input = ProverInput {
         elf: read(elf_path).unwrap(),
+        execute_only: run_info.run_type == Execute,
         seg_size,
         public_inputstream,
         private_inputstream,
-        ..Default::default()
     };
 
     let start = Instant::now();
