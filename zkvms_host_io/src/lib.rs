@@ -26,6 +26,9 @@ struct Cli {
     repeat: Option<usize>,
 
     #[arg(short, long, requires = "benchmark")]
+    millis: bool,
+
+    #[arg(short, long, requires = "benchmark")]
     metrics_output: Option<String>,
 }
 
@@ -41,6 +44,7 @@ pub struct RunWith {
     pub run_type: RunType,
     pub benchmarking: bool,
     pub repeats: usize,
+    pub millis: bool,
     pub output_file: Option<String>,
 
     pub input: Input,
@@ -92,6 +96,7 @@ pub fn read_args() -> RunWith {
         run_type: cli.run_type,
         benchmarking: cli.benchmark,
         repeats: cli.repeat.unwrap_or(1),
+        millis: cli.millis,
         output_file: cli.metrics_output,
 
         input,

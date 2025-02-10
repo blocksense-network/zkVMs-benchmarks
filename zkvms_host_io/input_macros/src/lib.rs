@@ -132,31 +132,28 @@ pub fn benchmarkable(item: TokenStream) -> TokenStream {
                  }}
              }}
 
-             let mut output = String::new();
-
              if run_info.benchmarking {{
-                 output += &format!("Total Duration: {{}}",
-                     (*ends.last().unwrap() - *starts.first().unwrap())
-                     .as_secs());
-             }}
-             if run_info.repeats > 1 {{
+                 let mut output = String::new();
+
+                 let duration = *ends.last().unwrap() - *starts.first().unwrap();
+                 let duration = if run_info.millis {{ duration.as_millis() }} else {{ duration.as_secs().into() }};
+                 output += &format!("duration,{{duration}}\n");
+
                  let durations = starts
                      .into_iter()
                      .zip(ends.into_iter())
-                     .map(|(s,e)| (e - s).as_secs())
-                     .collect::<Vec<u64>>();
-                 output += &format!(";Average: {{}}",
-                     durations.iter().sum::<u64>() / durations.len() as u64);
-             }}
+                     .map(|(s,e)| if run_info.millis {{ (e - s).as_millis() }} else {{ (e - s).as_secs().into() }})
+                     .collect::<Vec<u128>>();
+                 let average = durations.iter().sum::<u128>() / durations.len() as u128;
+                 output += &format!("repeats,{{}}\naverage,{{average}}\n", run_info.repeats);
 
-             if run_info.benchmarking {{
-                if let Some(file) = run_info.output_file {{
-                    let mut outfile = File::create(file).unwrap();
-                    writeln!(outfile, "{{}}", output);
-                }}
-                else {{
-                    println!("{{}}", output);
-                }}
+                 if let Some(file) = run_info.output_file {{
+                     let mut outfile = File::create(file).unwrap();
+                     write!(outfile, "{{}}", output);
+                 }}
+                 else {{
+                     print!("{{}}", output);
+                 }}
              }}
         }}
     "#).parse().unwrap()
