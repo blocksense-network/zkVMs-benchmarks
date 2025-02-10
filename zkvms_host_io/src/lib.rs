@@ -9,16 +9,21 @@ static DEFAULT_PUBLIC_INPUT: &str = include_str!(concat!(env!("INPUTS_DIR"), "/d
 static DEFAULT_PRIVATE_INPUT: &str = include_str!(concat!(env!("INPUTS_DIR"), "/default_private_input.toml"));
 static DEFAULT_ENV: &str = include_str!(concat!(env!("INPUTS_DIR"), "/default.env"));
 
+/// A CLI tool for running and benchmarking guest programs inside a zkVM
+/// environment.
+/// This binary has been built with a single zkVM and guest program in mind.
+/// If you want to run or benchmark your own guest program inside a zkVM,
+/// head on over to https://github.com/blocksense-network/zkVMs-benchmarks
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct Cli {
-    /// ZKVM action (execute, prove, verify)
+    /// What should the zkVM do with the guest
     run_type: RunType,
 
-    /// Path to private input file in (TOML format)
+    /// Path to private input file (in TOML format)
     private_input: Option<String>,
 
-    /// Path to public input file in (TOML format)
+    /// Path to public input file (in TOML format)
     public_input: Option<String>,
 
     /// Enable benchmark timer and formatted output
