@@ -1,7 +1,16 @@
+//! A "library" with procedural macro functions for parsing and handling
+//! function definitions.
+//!
+//! As of writing, exporting procedural macro functions is not supported.
+//! Therefore, it should be used in ZKVM wrapper_macro crates, via a [mod path
+//! attribute](https://doc.rust-lang.org/reference/items/modules.html#the-path-attribute).
+
 use proc_macro::{ TokenStream, TokenTree, Delimiter, Spacing, Group };
 
-/// Input:  "fn name(...) -> ... { ... }"
-/// Output: "name", "(...)", "..."
+/// Split function definition into triplet of name, arguments and output types.
+///
+/// **Input:**  "fn name(...) -> ... { ..... }"
+/// **Output:** "name", "(...)", "..."
 pub fn split_fn(item: &TokenStream) -> (TokenStream, TokenStream, TokenStream) {
     let item = item.clone().into_iter();
 
@@ -44,8 +53,11 @@ pub fn split_fn(item: &TokenStream) -> (TokenStream, TokenStream, TokenStream) {
     (name, args, ret)
 }
 
-/// Input:  "(p1 : t1, p2: t2, ...)"
-/// Output: vec!["p1 : t1", "p2: t2", ...]
+/// Split arguments group into a vector of each argument with it's associated
+/// type.
+///
+/// **Input:**  "(p1 : t1, p2 : t2, ...)"
+/// **Output:** vec!["p1 : t1", "p2 : t2", ...]
 pub fn args_split(item: &TokenStream) -> Vec<TokenStream> {
     let contents;
     if let TokenTree::Group(group) = item.clone().into_iter().next().unwrap() {
@@ -62,6 +74,9 @@ pub fn args_split(item: &TokenStream) -> Vec<TokenStream> {
     for tt in contents {
         match tt {
             TokenTree::Punct(ref punct) => match punct.as_char() {
+                    // < and > do **not** form TokenTree groups, however their
+                    // usage is like that of a group. Hence, we need extra
+                    // logic to skip them.
                     '<' => angle_level += 1,
                     '>' => angle_level -= 1,
                     ',' => if angle_level == 0 {
@@ -83,8 +98,13 @@ pub fn args_split(item: &TokenStream) -> Vec<TokenStream> {
     args
 }
 
-/// Input:  "(p1 : t1, p2: t2, ...)"
-/// Output: vec!["p1 : t1", "p2: t2", ...], vec!["p1 : t1", "p2: t2", ...]
+/// Like `args_split`, however two vectors are returned: the first for public
+/// arguments (and their types) and the second for private ones.
+///
+/// `public` is a vector of argument names.
+///
+/// **Input:**  "(p1 : t1, p2: t2, ...)", vec!["p3", "p4", ...]
+/// **Output:** vec!["p1 : t1", "p2: t2", ...], vec!["p3 : t3", "p4: t4", ...]
 pub fn args_split_public(item: &TokenStream, public: &Vec<&String>) -> (Vec<TokenStream>, Vec<TokenStream>) {
     let all_args = args_split(item);
     let public_args: Vec<TokenStream> = all_args
@@ -99,15 +119,18 @@ pub fn args_split_public(item: &TokenStream, public: &Vec<&String>) -> (Vec<Toke
     (public_args, private_args)
 }
 
-/// Input:  "(p1 : t1, p2: t2, ...)"
-/// Output: vec![p1, p2, ...], vec![t1, t2, ...]
+/// Split arguments group into two vectors: one for all argument names and one
+/// for every argument type.
+///
+/// **Input:**  "(p1 : t1, p2: t2, ...)"
+/// **Output:** vec!["p1", "p2", ...], vec!["t1", "t2", ...]
 pub fn args_divide(item: &TokenStream) -> (Vec<TokenStream>, Vec<TokenStream>) {
     let contents;
     if let TokenTree::Group(group) = item.clone().into_iter().next().unwrap() {
         contents = group.stream().into_iter();
     }
     else {
-        unreachable!();
+        unreachable!("Item passed to args_divide is not a group: \"{item}\"");
     }
 
     let mut patterns = Vec::new();
@@ -119,11 +142,15 @@ pub fn args_divide(item: &TokenStream) -> (Vec<TokenStream>, Vec<TokenStream>) {
     for tt in contents {
         match tt {
             TokenTree::Punct(ref punct) => {
+                // Ignore "::"
                 if punct.spacing() == Spacing::Joint && punct.as_char() == ':' {
                     ignore_next = true;
                 }
                 else if !ignore_next {
                     match punct.as_char() {
+                        // < and > do **not** form TokenTree groups, however their
+                        // usage is like that of a group. Hence, we need extra
+                        // logic to skip them.
                         '<' => angle_level += 1,
                         '>' => angle_level -= 1,
                         ':' => {
@@ -153,8 +180,13 @@ pub fn args_divide(item: &TokenStream) -> (Vec<TokenStream>, Vec<TokenStream>) {
     (patterns, types)
 }
 
-/// Input:  "(p1 : t1, p2: t2, ...)"
-/// Output: (vec![p1, p2, ...], vec![t1, t2, ...]), (vec![p1, p2, ...], vec![t1, t2, ...])
+/// Like `args_divide`, however two tuples of vectors are returned: the first
+/// for public arguments and types, and the second for private ones.
+///
+/// `public` is a vector of argument names.
+///
+/// **Input:**  "(p1 : t1, p2: t2, ...)", vec!["p3", "p4", ...]
+/// **Output:** (vec!["p1", "p2", ...], vec!["t1", "t2", ...]), (vec!["p3", "p4", ...], vec!["t3", "t4", ...])
 pub fn args_divide_public(item: &TokenStream, public: &Vec<&String>) -> ((Vec<TokenStream>, Vec<TokenStream>), (Vec<TokenStream>, Vec<TokenStream>)) {
     let (patterns, types) = args_divide(item);
 
@@ -173,15 +205,19 @@ pub fn args_divide_public(item: &TokenStream, public: &Vec<&String>) -> ((Vec<To
     ((public_patterns, public_types), (private_patterns, private_types))
 }
 
-/// Input:  "(p1 : t1, p2: t2, ...)"
-/// Output: "(p1, p2, ...)", "(t1, t2, ...)"
+/// Like `args_divide`, but group arguments and types (via `group_streams`).
+///
+/// **Input:**  "(p1 : t1, p2: t2, ...)"
+/// **Output:** "(p1, p2, ...)", "(t1, t2, ...)"
 pub fn args_divide_grouped(item: &TokenStream) -> (TokenStream, TokenStream) {
     let (patterns, types) = args_divide(&item);
     (group_streams(&patterns), group_streams(&types))
 }
 
-/// Input:  vec![p1, p2, ...]
-/// Output: "(p1, p2, ...)"
+/// Transform a vector of elements into a (TokenTree) group of elements
+///
+/// **Input:**  vec!["p1", "p2", ...]
+/// **Output:** "(p1, p2, ...)"
 pub fn group_streams(patterns: &Vec<TokenStream>) -> TokenStream {
     let mut inner_ts = TokenStream::new();
     inner_ts.extend(patterns.clone().into_iter().flat_map(|i| [",".parse().unwrap(), i]).skip(1));
