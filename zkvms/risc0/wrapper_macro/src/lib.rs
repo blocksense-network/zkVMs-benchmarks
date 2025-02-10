@@ -4,6 +4,32 @@ use proc_macro::TokenStream;
 mod parse_fn;
 use crate::parse_fn::{ split_fn, args_split, args_divide_public, args_divide_grouped };
 
+/// Create a body, which reads all inputs, stores them in variables, then
+/// commits the ones, defined as public in `default_public_input.toml` to the
+/// journal and finally executes the guest entrypoint function with those
+/// arguments, committing its output.
+///
+/// # Usage
+///
+/// Inside RISC0's guest (excluding the `entrypoint_expr` call):
+///
+/// ```rust
+/// make_wrapper!{fn main(...) -> ...}
+/// ```
+///
+/// # Example output
+///
+/// ```rust
+/// {
+///     let ... : ... = read();
+///     let ... : ... = read();
+///     ...
+///     commit(&...);
+///     commit(&...);
+///     ...
+///     commit(&zkp::main(..., ..., ...));
+/// }
+/// ```
 #[proc_macro]
 pub fn make_wrapper(item: TokenStream) -> TokenStream {
     let (name, args, ret) = split_fn(&item);

@@ -1,10 +1,15 @@
 [package]
 name = "guest"
+description = "RISC0's specific guest crate, which includes the chosen guest in guests"
 version = "0.1.0"
 edition = "2021"
 
 [workspace]
 
 [dependencies]
-wrapper_macro = { version = "0.1.0", path = "../wrapper_macro" }
 risc0-zkvm = { path = "/nix/store/l1rxg23rrrdwi9cf6rc82mqavklvqc18-risc0-unstable-2024-12-21/risc0/zkvm", default-features = false, features = ['std'] }
+
+wrapper_macro = { version = "0.1.0", path = "../wrapper_macro" }
+
+# The zkp dependency references a chosen guest in guests. It is included
+# (inserted here) by Nix. See zkvmLib.nix
