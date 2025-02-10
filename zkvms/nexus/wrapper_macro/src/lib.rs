@@ -7,7 +7,7 @@ use crate::parse_fn::{ split_fn, args_split, args_divide_public, args_divide_gro
 /// Creates a body, which reads all inputs, stores them in variables, then
 /// writes the ones, defined as public in `default_public_input.toml` to the
 /// journal and finally executes the guest entrypoint function with those
-/// arguments.
+/// arguments, committing its output.
 ///
 /// # Usage
 ///
