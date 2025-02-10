@@ -5,6 +5,12 @@ use std::process::{Command, Stdio};
 static PUBLIC_INPUT_PATH: &str = "public_input.bin";
 static PRIVATE_INPUT_PATH: &str = "private_input.bin";
 
+/// Inserts array sizes before every square bracket
+///
+/// # Example
+///
+/// If `flat` is "[[0,1], [2,3,4], []]"
+/// Output will be "3[2[0,1], 3[2,3,4], 0[]]"
 fn get_with_sizes(flat: &str) -> String {
     let mut values = flat
         .split('[')
@@ -47,11 +53,21 @@ fn get_with_sizes(flat: &str) -> String {
     }
 }
 
+/// Creates an anonymous function which takes `run_info`, "serializes" the
+/// specified input, outputs it into a file and returns a "path:<PATH>"
+/// argument, ready to be passed to zkWasm.
+///
+/// The macro takes three arguments: run_info input expression, path for file
+/// output and the name of a foreach macro.
+///
+/// For collection types, first the size is emitted and afterwards its actual
+/// values.
 macro_rules! build_input {
     ($input:expr , $path:ident , $type:ident) => {
         |run_info: &RunWith| {
             let mut ret: Vec<u64> = Vec::new();
             $type!{
+                // Simplify input string
                 let flat = format!("{:?}", $input.yield)
                     .replace("false", "0")
                     .replace("true",  "1")
