@@ -19,6 +19,7 @@ fn main() {
     match run_info.run_type {
         Execute => unreachable!(),
         Prove => benchmarkable!{
+            // Nova<T> doesn't derive Clone
             println!("Loading guest...");
             let prover: Nova<Local> = Nova::new_from_file(&elf_path).expect("failed to load guest program");
 
@@ -37,6 +38,7 @@ fn main() {
             println!(">>>>> Logging\n{}<<<<<", proof.logs().join(""));
         },
         Verify => benchmarkable!{
+            // Nova<T> doesn't derive Clone
             println!("Loading guest...");
             let prover: Nova<Local> = Nova::new_from_file(&elf_path).expect("failed to load guest program");
 

@@ -1,5 +1,6 @@
 [package]
 name = "guest"
+description = "Nexus' specific guest crate, which includes the chosen guest in guests"
 version = "0.1.0"
 edition = "2021"
 
@@ -8,3 +9,6 @@ nexus-rt = { path = "/nix/store/5cgkj88k6k40gzsa6jwgfcqpkg04awr7-Nexus-zkVM-unst
 postcard = { version = "1.0.10", default-features = false, features = ["alloc"] }
 
 wrapper_macro = { version = "0.1.0", path = "../wrapper_macro" }
+
+# The zkp dependency references a chosen guest in guests. It is included
+# (inserted here) by Nix. See zkvmLib.nix
