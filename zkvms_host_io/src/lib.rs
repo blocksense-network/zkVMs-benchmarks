@@ -39,7 +39,7 @@ struct Cli {
     millis: bool,
 
     /// Put the benchmark's formatted output into a file of the given path
-    #[arg(short, long, requires = "benchmark")]
+    #[arg(short = 'o', long, requires = "benchmark")]
     metrics_output: Option<String>,
 
     /// Append the benchmark formatted output to the given file, instead of replacing it
