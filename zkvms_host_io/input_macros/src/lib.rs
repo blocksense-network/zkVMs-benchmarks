@@ -197,7 +197,7 @@ pub fn benchmarkable(item: TokenStream) -> TokenStream {
              }}
 
              if run_info.benchmarking {{
-                 let mut output = format!("zkvm,{{}}\n", env!("ZKVM"));
+                 let mut output = format!("zkvm,{{}}\nguest,{{}}\n", env!("ZKVM"), env!("GUEST"));
 
                  let duration = *ends.last().unwrap() - *starts.first().unwrap();
                  let duration = if run_info.millis {{ duration.as_millis() }} else {{ duration.as_secs().into() }};
