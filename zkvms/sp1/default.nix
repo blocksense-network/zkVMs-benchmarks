@@ -9,7 +9,7 @@
 let
   commonArgs = {
     pname = "sp1";
-    version = "infdev";
+    inherit (metacraft-labs.sp1) version;
 
     src = with lib.fileset; toSource {
       root = ../..;

@@ -8,7 +8,7 @@
 let
   commonArgs = {
     pname = "risc0";
-    version = "infdev";
+    inherit (metacraft-labs.risc0) version;
 
     src = with lib.fileset; toSource {
       root = ../..;

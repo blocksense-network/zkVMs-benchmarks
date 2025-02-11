@@ -11,7 +11,7 @@
 let
   commonArgs = rec {
     pname = "zkwasm";
-    version = "infdev";
+    inherit (metacraft-labs.zkwasm) version;
 
     src = with lib.fileset; toSource {
       root = ../..;

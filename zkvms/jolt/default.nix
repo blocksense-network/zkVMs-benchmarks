@@ -10,7 +10,7 @@
 let
   commonArgs = {
     pname = "jolt";
-    version = "infdev";
+    inherit (metacraft-labs.jolt) version;
 
     src = with lib.fileset; toSource {
       root = ../..;

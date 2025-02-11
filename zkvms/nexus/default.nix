@@ -10,7 +10,7 @@
 let
   commonArgs = {
     pname = "nexus";
-    version = "infdev";
+    inherit (metacraft-labs.nexus) version;
 
     src = with lib.fileset; toSource {
       root = ../..;

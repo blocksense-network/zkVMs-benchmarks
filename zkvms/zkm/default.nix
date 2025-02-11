@@ -37,7 +37,7 @@ let
 
   commonArgs = {
     pname = "zkm";
-    version = "infdev";
+    inherit (metacraft-labs.zkm) version;
 
     src = with lib.fileset; toSource {
       root = ../..;
