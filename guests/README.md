@@ -80,7 +80,7 @@ These are normal Rust programs, with certain specific patterns implemented for z
 
    1. The first, `default.env`, contains pairs of `NAME=VALUE` and line comments, similar to shell scripts.
       These values set zkVM-specific options.
-      Information on the possible values, their meaning and how to choose them, can be found [here](../zkvms/README.md).
+      Information on the possible values, their meaning and how to choose them, can be found [here](../zkvms/README.md#zkvm-specific-environment-variables).
       However, generally, you'll only need to set ZKM's `SEG_SIZE`.
 
       A simple example comes from `fibonacci`:
