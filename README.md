@@ -1,7 +1,7 @@
 # zkVMs-benchmarks
 
 This is a repository with setups and programs for zero-knowledge virtual machine benchmarking.
-Its ultimate goal is to deliver reproducible and accurate performance metrics accross all zkVMs, so **you** can choose which technology suits your needs!
+Its ultimate goal is to deliver reproducible and accurate performance metrics accross many zkVMs, so **you** can choose which technology suits your needs!
 
 Being made with reproducibility in mind, this project also serves as a good framework for running programs accross zkVMs without the complicated and everchanging setups required to do so.
 
@@ -22,7 +22,7 @@ sh <(curl -L https://nixos.org/nix/install) --daemon
 > It is preferrable to use the nixos.org script, as shown above!
 > Certain systems provide Nix with their native package managers, however practice has shown those do not always lead to working setups!
 
-Now, what follows depends on your usecase.
+Now, what follows depends on your use case.
 
 ### Run/benchmark a "built-in" program
 
@@ -64,6 +64,7 @@ nix run github:blocksense-network/zkVMs-benchmarks#sp1/fibonacci -- verify
 
   > [!NOTE]
   > Remember to `git add` your project!
+  > Nix only sees files which are tracked by git.
 
 4. Use the `.` path as the `nix run` source.
    So, for example, if you want to create a proof for your program with [Jolt](https://jolt.a16zcrypto.com/), you can run:
@@ -79,7 +80,7 @@ nix run github:blocksense-network/zkVMs-benchmarks#sp1/fibonacci -- verify
 When issuing `nix run`, a number of binaries are built for the relevant zkVM(s) and program, and the "main" binary is ran.
 This program has a constant argument schema accross all possibile configurations.
 
-All arguments after `--` are passed to it.
+All command parameters after `--` are passed to it.
 As a start, you should look at the built-in help message.
 Further in this section there are some common configurations of arguments you may want to use.
 
@@ -134,7 +135,7 @@ Extending on the previous example, we can pass public and private input TOML fil
 nix run github:blocksense-network/zkVMs-benchmarks#fibonacci -- prove ./private.toml ./public.toml -bamo result.csv
 ```
 
-Other formats and taking inputs from standard input is not supported.
+Input cannnot be fed through stdin and TOML is the only supported format.
 
 ## Benchmark metrics output format
 
