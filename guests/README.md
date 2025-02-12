@@ -6,7 +6,7 @@ These are normal Rust programs, with certain specific patterns implemented for z
 ## Adding your own program
 
 > [!IMPORTANT]
-> **Implement your program beforehand!**
+> **Fully implement and test your program before trying to add it here!**
 >  Although this repo makes it easy to run your program on all zkVMs, developing is not made easier.
 
 1. **Copy the project to this directory.**
@@ -40,7 +40,8 @@ These are normal Rust programs, with certain specific patterns implemented for z
 
    1. Above your main (entrypoint) function add a `#[guests_macro::proving_entrypoint]` attribute
    2. Make sure the function is public
-   3. Move all input variable declarations as arguments to the main function and remove their assignments
+   3. Move all input variable declarations as arguments to the main function and remove their assignments.
+      Input parsing is built-in and automagically handles types.
    4. In case your program works without the standard library, or you want to support lack of std, remember to add  
       `#![cfg_attr(feature = "no_std", no_std)]` at the top of your `lib.rs`
 
@@ -82,12 +83,42 @@ These are normal Rust programs, with certain specific patterns implemented for z
       Information on the possible values, their meaning and how to choose them, can be found [here](../zkvms/README.md).
       However, generally, you'll only need to set ZKM's `SEG_SIZE`.
 
+      A simple example comes from `fibonacci`:
+
+      ```sh
+      # ZKM
+      SEG_SIZE=2783
+      ```
+
    2. `default_private_input.toml` and `default_public_input.toml` contain default input values for your program.
       Each [key](https://toml.io/en/v1.0.0#keyvalue-pair) is the name of an attribute in your main function.
       Keys between the two files must be unique, meaning each main function attribute is defined in **only one** of the files.
 
       Whether an input is public or not is defined in these files, **not** in your code!
       It is preferable for your default input to be short, so the default execution, proving and verification steps are fast.
+
+      Again, simple examples are found in `fibonacci`.
+      For the following main function:
+
+      ```rust
+      /* ... */
+      pub fn main(n: u8, fN: u64) -> bool {
+      /* ... */
+      ```
+
+      this default private input:
+
+      ```toml
+      fN = 259695496911122585
+      ```
+
+      and this default public input:
+
+      ```toml
+      n = 85
+      ```
+
+      are correct.
 
 7. **Track or commit your project with git.**
 
