@@ -1,9 +1,9 @@
 # zkVMs-benchmarks
 
 This is a repository with setups and programs for zero-knowledge virtual machine benchmarking.
-Its ultimate goal is to deliver reproducible and accurate performance metrics accross many zkVMs, so **you** can choose which technology suits your needs!
+Its ultimate goal is to deliver reproducible and accurate performance metrics across many zkVMs, so **you** can choose which technology suits your needs!
 
-Being made with reproducibility in mind, this project also serves as a good framework for running programs accross zkVMs without the complicated and everchanging setups required to do so.
+Being made with reproducibility in mind, this project also serves as a good framework for running programs across zkVMs without the complicated and ever-changing setups required to do so.
 
 ## Usage
 
@@ -19,7 +19,7 @@ sh <(curl -L https://nixos.org/nix/install) --daemon
 ```
 
 > [!WARNING]
-> It is preferrable to use the nixos.org script, as shown above!
+> It is preferable to use the nixos.org script, as shown above!
 > Certain systems provide Nix with their native package managers, however practice has shown those do not always lead to working setups!
 
 Now, what follows depends on your use case.
@@ -149,7 +149,7 @@ Extending on the previous example, we can pass public and private input TOML fil
 nix run github:blocksense-network/zkVMs-benchmarks#fibonacci -- prove ./private.toml ./public.toml -bamo result.csv
 ```
 
-Input cannnot be fed through stdin and TOML is the only supported format.
+Input cannot be fed through stdin and TOML is the only supported format.
 
 ## Benchmark metrics output format
 
