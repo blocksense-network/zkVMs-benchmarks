@@ -46,6 +46,12 @@ Or to make, for example, [SP1](https://docs.succinct.xyz/docs/sp1/introduction) 
 nix run github:blocksense-network/zkVMs-benchmarks#sp1/fibonacci -- verify
 ```
 
+As you can tell, you may issue `...#ZKVM/PROGRAM ...` to execute/prove/verify a single program on the chosen zkVMs or `...#PROGRAM ...` to do the same on *all* zkVMs.
+The format `...#ZKVM ...` is also supported, pairing the chosen zkVM with the **default** guest program (currently `graph_coloring`).
+
+The possible values for `ZKVM` correspond to the directory names inside `zkvms` folder at the root of the repository.
+Consequently, `PROGRAM` values are connected to directory names inside `guests`.
+
 ### Run/benchmark your own program
 
 1. Clone the [git repository](https://github.com/blocksense-network/zkVMs-benchmarks)
@@ -77,8 +83,16 @@ nix run github:blocksense-network/zkVMs-benchmarks#sp1/fibonacci -- verify
 
 ## Command arguments
 
-When issuing `nix run`, a number of binaries are built for the relevant zkVM(s) and program, and the "main" binary is ran.
-This program has a constant argument schema accross all possibile configurations.
+The general format for `nix run` is:
+
+```sh
+nix run github:blocksense-network/zkVMs-benchmarks#BINARY -- PARAMETERS
+```
+
+`BINARY` is either in the form `ZKVM`, `PROGRAM` or `ZKVM/PROGRAM`.
+
+As already discussed in "[Run/benchmark a "built-in" program](#runbenchmark-a-built-in-program)", the possible values for `ZKVM` are the subdirectory names inside `zkvms` and for `PROGRAM` are the subdirectory names inside `guests`.
+The first form executes/proves/verifies the **default** program (currently `graph_coloring`) with the selected zkVM, the second selects a given program to be ran across **all** zkVMs and the third chooses a specific zkVM and program to act upon.
 
 All command parameters after `--` are passed to it.
 As a start, you should look at the built-in help message.
