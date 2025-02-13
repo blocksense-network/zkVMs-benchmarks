@@ -149,7 +149,7 @@ Extending on the previous example, we can pass public and private input TOML fil
 nix run github:blocksense-network/zkVMs-benchmarks#fibonacci -- prove ./private.toml ./public.toml -bamo result.csv
 ```
 
-Input cannot be fed through stdin and TOML is the only supported format.
+Input cannot be fed through stdin and no other format, except TOML, is supported.
 
 ## Benchmark metrics output format
 
