@@ -20,7 +20,7 @@ To make input and output handling generic, we define a guest "wrapper" crate ins
 We need to be extra generic in our guest wrapper, because the type of our input function (and therefore, our information on what we need to do) exists only in the user's guest implementation.
 That is the reason why every guest must include a `#[guests_macro::proving_entrypoint]` attribute above their main function: it extracts that type and converts it into an "object" which can then be used inside the wrapper.
 
-That is also the reason why reading input and outputing the result is handled by `wrapper_macro`.
+That is also the reason why reading input and outputting the result is handled by `wrapper_macro`.
 
 > [!NOTE]
 > You may be tempted to think about using Rust generics, but in our case we can have:
