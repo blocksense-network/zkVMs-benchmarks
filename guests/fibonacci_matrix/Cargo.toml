@@ -1,0 +1,11 @@
+[package]
+name = "fibonacci"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+nalgebra = "0.32"
+guests_macro = { version = "0.1.0", path = "../../guests_macro" }
+
+[features]
+no_std = []
