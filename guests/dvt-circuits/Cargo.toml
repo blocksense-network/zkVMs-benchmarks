@@ -1,0 +1,36 @@
+[package]
+name = "finalization_prove"
+version = "1.1.0"
+edition = "2021"
+publish = false
+
+[workspace]
+members = [
+    "bls_utils",
+    "dvt_abi",
+]
+
+[workspace.package]
+edition = "2021"
+version = "0.1.0"
+authors = ["Martin Dobrev <martindobrev0@gmail.com>", "Grigor Gachev", "Zahary Karadjov" ]
+keywords = ["nimbus", "dvt"]
+categories = ["cryptography"]
+repository = "https://github.com/metacraft-labs/dvt-circuits"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+bls12_381 = { git = "https://github.com/sp1-patches/bls12_381", features = ["experimental"]  }
+ff = "0.13.0"
+rand = "0.8.5"
+group = "0.13.0"
+serde = "1.0.216"
+dvt_abi = { path = "./dvt_abi" }
+bls_utils = { path = "./bls_utils" }
+sha2 = "0.10"
+hex = "0.4"
+
+guests_macro = { version = "0.1.0", path = "../../guests_macro" }
+
+[features]
+no_std = []
