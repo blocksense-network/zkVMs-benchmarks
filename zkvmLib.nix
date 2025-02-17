@@ -104,7 +104,8 @@ in {
 
   buildPackage = craneLib: args: let
     pname = "${args.pname}_${guest}";
-  in craneLib.buildPackage ((generateCargoLocks craneLib args) // {
+    cargoLocks = generateCargoLocks craneLib args;
+  in craneLib.buildPackage (cargoLocks // {
     phases = [
       "unpackPhase" "patchPhase" "configurePhase" # Standard phases
       "cargoSetupGuest" "buildGuestPhase" # Custom phases
@@ -113,16 +114,15 @@ in {
 
     cargoSetupGuest = let
       appended = ''
-        zkp = { path = "../../../guests/${guest}", package = "${guest}" }
-
         [features]
         guest = [] # Only used in jolt
         no_std = ["zkp/no_std"]
       '';
     in ''
-      echo '${appended}' >> zkvms/${args.pname}/guest/Cargo.toml
       pushd zkvms/${args.pname}/guest
 
+      cp '${cargoLocks.cargoLockDrv}/Cargo.lock' Cargo.lock
+      cargo add --path "../../../guests/${guest}" --rename zkp --offline
       echo '${appended}' >> Cargo.toml
 
       popd
