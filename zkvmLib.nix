@@ -15,7 +15,6 @@ pkgs: guest: let
           tail -n +4 ./guest/Cargo.lock >> "$out/Cargo.lock"
           tail -n +4 ../../guests/${guest}/Cargo.lock >> "$out/Cargo.lock"
 
-          cp ./guest/Cargo.lock "$out/Guest-Cargo.lock"
         '';
       };
 
@@ -31,7 +30,9 @@ in {
         ${args.postUnpack or ""}
         ln -s ../../../guests ./source/zkvms/${args.pname}/guest/
         ln -s ../../../guests_macro ./source/zkvms/${args.pname}/guest/
-        ln -s '${cargoLocks.cargoLockDrv}/Guest-Cargo.lock' ./source/zkvms/${args.pname}/guest/Cargo.lock
+
+        cp '${cargoLocks.cargoLockDrv}/Cargo.lock' ./source/zkvms/${args.pname}/guest/Cargo.lock
+        chmod +w ./source/zkvms/${args.pname}/guest/Cargo.lock
       '';
 
       preBuild = ''
