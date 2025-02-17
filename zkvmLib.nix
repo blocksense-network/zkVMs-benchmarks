@@ -106,14 +106,12 @@ in {
     pname = "${args.pname}_${guest}";
   in craneLib.buildPackage ((generateCargoLocks craneLib args) // {
     phases = [
-      "unpackPhase" # Standard phases
-      "linkGuest" # Custom phase
-      "patchPhase" "configurePhase" # Standard phases
-      "buildGuestPhase" # Custom phase
+      "unpackPhase" "patchPhase" "configurePhase" # Standard phases
+      "cargoSetupGuest" "buildGuestPhase" # Custom phases
       "buildPhase" "checkPhase" "installPhase" "fixupPhase" # Standard phases
     ];
 
-    linkGuest = let
+    cargoSetupGuest = let
       appended = ''
         zkp = { path = "../../../guests/${guest}", package = "${guest}" }
 
@@ -123,6 +121,11 @@ in {
       '';
     in ''
       echo '${appended}' >> zkvms/${args.pname}/guest/Cargo.toml
+      pushd zkvms/${args.pname}/guest
+
+      echo '${appended}' >> Cargo.toml
+
+      popd
     '';
 
     buildGuestPhase = ''
