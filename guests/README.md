@@ -11,8 +11,6 @@ These are normal Rust programs, with certain specific patterns implemented for z
 
 1. **Copy the project to this directory.**
 
-   Make sure the directory name is the **same** as the package name (inside your `Cargo.toml`)!
-
    If you refer to local path dependencies, which you want to include with the project, move them inside the `guest/YOUR_PROJECT/` directory!
    Everything directly inside `guests` is expected to be a crate, setup to be ran by the zkVMs.
 
