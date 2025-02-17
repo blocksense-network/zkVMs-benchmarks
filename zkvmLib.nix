@@ -7,14 +7,72 @@ pkgs: guest: let
           fileset = ./.;
         };
 
-        installPhase = ''
+        installPhase = let
+          # Since we're concatenating Cargo.lock files, duplicate package entries
+          # are inevitable and cargo crashes when it encounters them.
+          # We'll manually remove all duplicates and cargo will be happy.
+          # This is a disgusting hack, but it's the best I've come up with.
+          removeDuplicates = ''
+              BEGIN {
+                  unique = 1
+              }
+
+              /^\[\[package\]\]/ { unique = 0; next }
+
+              /^name = / {
+                  match($0, /".*"/)
+                  name = substr($0, RSTART + 1, RLENGTH - 2)
+                  next
+              }
+
+              name && /^version = / {
+                  match($0, /".*"/)
+                  version = substr($0, RSTART + 1, RLENGTH - 2)
+                  next
+              }
+
+              version && /^source = / {
+                  match($0, /".*"/)
+                  source = substr($0, RSTART + 1, RLENGTH - 2)
+                  next
+              }
+
+              source && /^checksum = / {
+                  match($0, /".*"/)
+                  checksum = substr($0, RSTART + 1, RLENGTH - 2)
+                  next
+              }
+
+              name && !unique {
+                  unique = (index(versions[name], version) == 0) ||
+                           (source && index(sources[name], source) == 0) ||
+                           (checksum && index(checksums[name], checksum) == 0)
+
+                  if (unique) {
+                      versions[name]  = versions[name] version
+                      sources[name]   = sources[name] source
+                      checksums[name] = checksums[name] checksum
+
+                      print "[[package]]"
+                      print "name = \"" name "\""
+                      print "version = \"" version "\""
+                      if (source)   print "source = \"" source "\""
+                      if (checksum) print "checksum = \"" checksum "\""
+                  }
+                  name = ""; version = ""; source = ""; checksum = ""
+              }
+
+              unique || /^$/ { print }
+          '';
+        in ''
           mkdir -p "$out"
           cd zkvms/${args.pname}
 
-          cat ./host/Cargo.lock > "$out/Cargo.lock"
-          tail -n +4 ./guest/Cargo.lock >> "$out/Cargo.lock"
-          tail -n +4 ../../guests/${guest}/Cargo.lock >> "$out/Cargo.lock"
+          cat ./host/Cargo.lock > lockfile
+          tail -n +4 ./guest/Cargo.lock >> lockfile
+          tail -n +4 ../../guests/${guest}/Cargo.lock >> lockfile
 
+          awk '${removeDuplicates}' lockfile > "$out/Cargo.lock"
         '';
       };
 
