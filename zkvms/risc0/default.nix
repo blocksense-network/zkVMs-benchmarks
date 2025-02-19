@@ -32,6 +32,8 @@ in
         metacraft-labs.risc0
       ];
 
+      guestToolchain = metacraft-labs.risc0-rust;
+
       guestTarget = "riscv32im-risc0-zkvm-elf";
 
       preBuild = ''

@@ -4,6 +4,20 @@ use zkm_sdk::{prover::ClientCfg, prover::{ProverInput, ProverResult} , ProverCli
 
 use zkvms_host_io::{read_args, benchmarkable, RunType::{ Execute, Prove, Verify }};
 
+async fn setup(
+    prover_client: &mut ProverClient,
+    prover_input: &mut ProverInput,
+    client_cfg: &mut ClientCfg,
+) {
+    let generation = prover_client
+        .setup_and_generate_sol_verifier(&client_cfg.zkm_prover, &client_cfg.vk_path, &prover_input)
+        .await;
+
+    if let Err(e) = generation {
+        panic!("Failed setup! Error: {e}");
+    }
+}
+
 async fn get_proof(
     prover_client: &mut ProverClient,
     prover_input: &mut ProverInput,
@@ -22,12 +36,10 @@ async fn execute(
     prover_client: &mut ProverClient,
     prover_input: &mut ProverInput,
 ) {
-    prover_input.execute_only = true;
-
     let prover_result = get_proof(prover_client, prover_input).await;
 
     prover_client
-        .print_guest_execution_output(false, &prover_result)
+        .print_guest_execution_output(true, &prover_result)
         .expect("print guest program excution's output false.")
 }
 
@@ -37,17 +49,6 @@ async fn prove(
     vk_path: &String,
     proof_results_path: &String,
 ) {
-    prover_input.execute_only = false;
-
-    // As far as I can tell, we cannot evade generating the sol verifier step
-    match prover_client
-        .setup_and_generate_sol_verifier("local", &vk_path, &prover_input)
-        .await
-    {
-        Ok(()) => println!("Succussfully setup_and_generate_sol_verifier."),
-        Err(e) => panic!("Error during setup_and_generate_sol_verifier: {}", e),
-    }
-
     let prover_result = get_proof(prover_client, prover_input).await;
 
     prover_client
@@ -87,11 +88,10 @@ async fn main() -> Result<()> {
             "/tmp/input",
         );
 
-    let mut client_config: ClientCfg = ClientCfg {
-        zkm_prover: "local".to_string(),
-        vk_path: vk_path.to_owned(),
-        ..Default::default()
-    };
+    let mut client_config = ClientCfg::new(
+        "local".to_string(),
+        vk_path.to_owned(),
+    );
 
     let mut prover_client = ProverClient::new(&client_config).await;
 
@@ -110,9 +110,12 @@ async fn main() -> Result<()> {
         seg_size,
         public_inputstream,
         private_inputstream,
+        ..Default::default()
     };
 
     let start = Instant::now();
+    setup(&mut prover_client, &mut prover_input, &mut client_config).await;
+
     match run_info.run_type {
         // only excute the guest program without generating the proof.
         Execute => benchmarkable!{

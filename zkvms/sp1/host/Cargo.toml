@@ -4,13 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-sp1-sdk = { path = "/nix/store/8g5sf8h6nfypnd736x6ns4c44s8g6qd4-sp1-unstable-2024-12-23/crates/sdk" }
-generic-array = "=1.1.1"
-serde_json = { version = "1.0", default-features = false, features = ["alloc"] }
-serde = { version = "1.0", default-features = false, features = ["derive"] }
-clap = { version = "4.0", features = ["derive", "env"] }
-tracing = "0.1.40"
-hex = "0.4.3"
-alloy-sol-types = "0.7.7"
+sp1-sdk = { path = "/nix/store/ixfkvjc23xwr9xgnzl4hwd089vbfh4ys-sp1-unstable-2025-02-09/crates/sdk" }
 
 zkvms_host_io = { path = "../../../zkvms_host_io" }
