@@ -4,8 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-risc0-zkvm = { path = "/nix/store/l1rxg23rrrdwi9cf6rc82mqavklvqc18-risc0-unstable-2024-12-21/risc0/zkvm" }
-risc0-zkp = { path = "/nix/store/l1rxg23rrrdwi9cf6rc82mqavklvqc18-risc0-unstable-2024-12-21/risc0/zkp" }
+risc0-zkvm = { path = "/nix/store/ii5y8znv6q1xskjslj0vhqkp1d6cj6y3-risc0-unstable-2025-02-14/risc0/zkvm" }
+risc0-zkp = { path = "/nix/store/ii5y8znv6q1xskjslj0vhqkp1d6cj6y3-risc0-unstable-2025-02-14/risc0/zkp" }
 # https://github.com/risc0/risc0/blob/881e512732eca72849b2d0e263a1242aba3158af/risc0/zkp/Cargo.toml#L23
 hex = { version = "0.4.3", default-features = false, features = ["alloc"] }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }

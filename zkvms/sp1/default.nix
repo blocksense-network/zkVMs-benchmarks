@@ -5,11 +5,17 @@
   metacraft-labs,
   pkg-config,
   craneLib-default,
+  gnum4,
 }:
 let
   commonArgs = {
     pname = "sp1";
     inherit (metacraft-labs.sp1) version;
+
+    nativeBuildInputs = [
+      metacraft-labs.sp1
+      gnum4
+    ];
 
     src = with lib.fileset; toSource {
       root = ../..;
@@ -20,6 +26,8 @@ let
           ../../zkvms_host_io
       ]);
     };
+
+    extraLockfile = "${metacraft-labs.sp1}/Cargo.lock";
   };
 
   craneLib = craneLib-default.overrideToolchain metacraft-labs.sp1;
@@ -28,10 +36,6 @@ in
   zkvmLib.buildPackage craneLib (commonArgs
     // {
       inherit cargoArtifacts;
-
-      nativeBuildInputs = [
-        metacraft-labs.sp1
-      ];
 
       guestTarget = "riscv32im-succinct-zkvm-elf";
 
