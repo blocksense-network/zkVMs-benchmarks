@@ -68,7 +68,13 @@ pkgs: guest: let
           mkdir -p "$out"
           cd zkvms/${args.pname}
 
+        '' + (if args ? extraLockfile then ''
+          cat ${args.extraLockfile} > lockfile
+          tail -n +4 ./host/Cargo.lock >> lockfile
+        '' else ''
           cat ./host/Cargo.lock > lockfile
+        '') + ''
+
           tail -n +4 ./guest/Cargo.lock >> lockfile
           tail -n +4 ../../guests/${guest}/Cargo.lock >> lockfile
 
