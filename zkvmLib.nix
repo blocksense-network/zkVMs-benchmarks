@@ -147,6 +147,9 @@ in {
     buildGuestPhase = ''
       export INPUTS_DIR="$PWD/guests/${guest}"
       export ZKVM="${args.pname}" GUEST="${guest}"
+      OLD_PATH="$PATH"
+
+      ${if args ? guestToolchain then "export PATH=\"${args.guestToolchain}/bin:$PATH\"" else ""}
 
       pushd zkvms/${args.pname}/guest
       runHook preBuildGuest
@@ -157,6 +160,7 @@ in {
 
       ${if args ? guestTarget then "ln -s ../../guest/target/${args.guestTarget}/release/guest ../host/src/guest" else ""}
       unset RUSTUP_TOOLCHAIN RUSTFLAGS CARGO_ENCODED_RUSTFLAGS
+      export PATH="$OLD_PATH"
 
       runHook postBuildGuest
       popd
@@ -165,12 +169,17 @@ in {
     buildPhase = ''
       export INPUTS_DIR="$PWD/guests/${guest}"
       export ZKVM="${args.pname}" GUEST="${guest}"
+      OLD_PATH="$PATH"
+
+      ${if args ? hostToolchain then "export PATH=\"${args.hostToolchain}/bin:$PATH\"" else ""}
 
       pushd zkvms/${args.pname}/host
       runHook preBuild
 
       cargo --version
       cargo build --release
+
+      export PATH="$OLD_PATH"
 
       runHook postBuild
       popd
