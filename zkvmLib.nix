@@ -153,6 +153,7 @@ in {
       pushd zkvms/${args.pname}/host
       runHook preBuild
 
+      cargo --version
       cargo build --release
 
       runHook postBuild
