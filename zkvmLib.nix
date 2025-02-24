@@ -76,14 +76,24 @@ pkgs: guest: let
         '';
       };
 
-    cargoVendorDir = craneLib.vendorCargoDeps {
-      src = cargoLockDrv;
-    };
+    cargoVendorDir = craneLib.vendorCargoDeps ({
+          src = cargoLockDrv;
+        } // (
+        if args ? overrideVendorCargoPackage then
+          { inherit (args) overrideVendorCargoPackage; }
+        else
+          { })
+        // (
+        if args ? overrideVendorGitCheckout then
+          { inherit (args) overrideVendorGitCheckout; }
+        else
+          { }));
+
   };
 in {
   buildDepsOnly = craneLib: args: let
     cargoLocks = generateCargoLocks craneLib args;
-  in craneLib.buildDepsOnly (cargoLocks // args // {
+  in craneLib.buildDepsOnly (cargoLocks // (builtins.removeAttrs args ["overrideVendorCargoPackage" "overrideVendorGitCheckout"]) // {
       postUnpack = ''
         ${args.postUnpack or ""}
         ln -s ../../../guests ./source/zkvms/${args.pname}/guest/
@@ -193,5 +203,5 @@ in {
     '';
 
     doNotPostBuildInstallCargoBinaries = true;
-  } // args // { inherit pname; });
+  } // (builtins.removeAttrs args ["overrideVendorCargoPackage" "overrideVendorGitCheckout"]) // { inherit pname; });
 }
