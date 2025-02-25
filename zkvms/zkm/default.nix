@@ -55,6 +55,16 @@ let
       protobuf
       metacraft-labs.zkm
     ];
+
+    overrideVendorGitCheckout = ps: drv:
+      if drv.src.shortRev == "155221d" && builtins.any (p: p.name == "zkm-sdk") ps then
+        drv.overrideAttrs (_: {
+          patches = [
+            ./0001-chore-Increase-DEGREE_BITS_RANGE.patch
+          ];
+        })
+      else
+        drv;
   };
 
   craneLib = craneLib-default.overrideToolchain metacraft-labs.zkm;
