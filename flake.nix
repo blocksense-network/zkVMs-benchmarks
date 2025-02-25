@@ -8,18 +8,22 @@
 
   inputs = {
     mcl-blockchain.url = "github:metacraft-labs/nix-blockchain-development";
+    mcl-blockchain-old.url = "github:metacraft-labs/nix-blockchain-development?rev=f717747a4ce11d5764578d8ee1c505d00bf8a81e";
     nixpkgs.follows = "mcl-blockchain/nixpkgs";
     crane.follows = "mcl-blockchain/crane";
     rust-overlay.follows = "mcl-blockchain/rust-overlay";
     # flake-utils.follows = "mcl-blockchain/flake-utils";
   };
 
-  outputs = { self, nixpkgs, mcl-blockchain, crane, rust-overlay, ... }:
+  outputs = { self, nixpkgs, mcl-blockchain, mcl-blockchain-old, crane, rust-overlay, ... }:
   let
     system = "x86_64-linux";
     pkgs = import nixpkgs { system = system; overlays = [
         mcl-blockchain.overlays.default
         rust-overlay.overlays.default
+        (_: _: {
+          metacraft-labs-old = mcl-blockchain-old.legacyPackages.${system}.metacraft-labs;
+        })
       ];
     };
     craneLib-default = crane.mkLib pkgs;
