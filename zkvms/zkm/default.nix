@@ -2,6 +2,7 @@
   lib,
   just,
   metacraft-labs,
+  metacraft-labs-old,
   rust-bin,
   protobuf,
   pkg-config,
@@ -84,6 +85,8 @@ in
       preBuild = ''
         export RUSTFLAGS="-L ${zkm_libsnark}/lib"
       '';
+
+      hostToolchain = metacraft-labs-old.zkm;
 
       preRunLibraries = [
         openssl
