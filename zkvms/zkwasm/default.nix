@@ -47,7 +47,7 @@ in
         export WASM_PACK_CACHE=.wasm-pack-cache
       '';
 
-      buildGuestCommand = "wasm-pack build --release --frozen";
+      buildGuestCommand = "wasm-pack build --release --frozen --features zkwasm";
 
       preBuild = ''
         export GUEST_PATH="$out/pkg/guest_bg.wasm"

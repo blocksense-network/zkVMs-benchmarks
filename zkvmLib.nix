@@ -133,6 +133,7 @@ in {
         [features]
         guest = [] # Only used in jolt
         no_std = ["zkp/no_std"]
+        ${args.pname} = ["zkp/${args.pname}"]
       '';
     in ''
       pushd zkvms/${args.pname}/guest
@@ -154,7 +155,7 @@ in {
       pushd zkvms/${args.pname}/guest
       runHook preBuildGuest
 
-      ${args.buildGuestCommand or "cargo build --release"} \
+      ${args.buildGuestCommand or "cargo build --release --features ${args.pname}"} \
           ${if args ? guestTarget then "--target " + args.guestTarget else ""} \
           ${args.guestExtraArgs or ""}
 

@@ -26,13 +26,19 @@ These are normal Rust programs, with certain specific patterns implemented for z
    guests_macro = { version = "0.1.0", path = "../../guests_macro" }
    ```
 
-   and add a `no_std` [feature](https://doc.rust-lang.org/cargo/reference/features.html) like this:
+   and add a `no_std` and zkVM [features](https://doc.rust-lang.org/cargo/reference/features.html) like this:
 
    ```toml
    no_std = []
+   jolt = []
+   nexus = []
+   risc0 = []
+   sp1 = []
+   zkm = []
+   zkwasm = []
    ```
 
-   It's ok if you don't conditionally include anything with the feature, however it **must** exist!
+   It's ok if you don't use those features in any way, however they **must** exist!
 
 4. **Update your program.**
 
