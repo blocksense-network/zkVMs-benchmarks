@@ -151,9 +151,17 @@ fn main() {
         foreach_private_input_field
     )(&run_info);
 
-    let output = run_info.env_or("ZKWASM_OUTPUT", "./output");
+    let output = run_info
+        .env_or(
+            "ZKWASM_OUTPUT",
+            "/tmp/output",
+        );
 
-    let params = run_info.env_or("ZKWASM_PARAMS", "./params");
+    let params = run_info
+        .env_or(
+            "ZKWASM_PARAMS",
+            "/tmp/params",
+        );
 
     match run_info.run_type {
         Execute => benchmarkable! {
