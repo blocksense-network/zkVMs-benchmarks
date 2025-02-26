@@ -221,6 +221,8 @@ in {
           pushd zkvms/${args.pname}/host
           runHook preBuild
 
+          cp '${cargoLocks.cargoLockDrv}/Cargo.lock' Cargo.lock
+
           cargo --version
           cargo build --release
 
