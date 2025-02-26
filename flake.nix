@@ -34,10 +34,10 @@
         (_: type: type == "directory")
         (builtins.readDir ./zkvms));
 
-    guests = [ null ] ++ (builtins.attrNames
+    guests = builtins.attrNames
       (pkgs.lib.filterAttrs
         (_: type: type == "directory")
-        (builtins.readDir ./guests)));
+        (builtins.readDir ./guests));
 
     foldr = pkgs.lib.foldr;
 

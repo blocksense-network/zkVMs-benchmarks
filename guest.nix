@@ -18,7 +18,7 @@ writeShellApplication {
       "$@"
     }
   '' + lib.foldr
-    (zkvm: accum: accum + "runZKVM \"${hostPackages."${zkvm}/${guest}"}/bin/${zkvm}_${guest}\" \"$@\"\n")
+    (zkvm: accum: "runZKVM \"${hostPackages."${zkvm}/${guest}"}/bin/${zkvm}_${guest}\" \"$@\"\n" + accum)
     ""
     zkvms;
 }
