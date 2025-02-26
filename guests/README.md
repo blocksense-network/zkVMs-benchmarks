@@ -139,3 +139,15 @@ You may execute/prove/verify a program in this directory (when the repository is
 ```sh
 nix run .#YOUR_PROJECT prove
 ```
+
+It is highly possible your program will not be compatible with a certain zkVM.
+You may either fix the issue, or blacklist the zkVM.
+
+## Blacklisting
+
+You may add files in the form `.no_ZKVM` to the `guest/YOUR_PROJECT` directory.
+The existance of one will disallow building your guest program with the zkVM.
+
+You'll still get an output from the Nix package, however it will be a trivial script, which prints a warning message.
+
+If `.no_ZKVM` contains text, the contents will be printed alongside the warning.
