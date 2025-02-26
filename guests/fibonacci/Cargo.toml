@@ -8,3 +8,9 @@ guests_macro = { version = "0.1.0", path = "../../guests_macro" }
 
 [features]
 no_std = []
+jolt = []
+nexus = []
+risc0 = []
+sp1 = []
+zkm = []
+zkwasm = []
