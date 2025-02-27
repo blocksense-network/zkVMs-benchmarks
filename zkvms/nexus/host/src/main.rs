@@ -1,8 +1,11 @@
-use zkvms_host_io::{Input, Output, read_args, benchmarkable, RunType::{ Execute, Prove, Verify }};
 use nexus_sdk::{
     compile::CompileOpts,
     nova::seq::{Generate, Nova, PP},
     Local, Prover, Verifiable,
+};
+use zkvms_host_io::{
+    benchmarkable, read_args, Input, Output,
+    RunType::{Execute, Prove, Verify},
 };
 
 fn main() {
@@ -18,7 +21,7 @@ fn main() {
 
     match run_info.run_type {
         Execute => unreachable!(),
-        Prove => benchmarkable!{
+        Prove => benchmarkable! {
             // Nova<T> doesn't derive Clone
             println!("Loading guest...");
             let prover: Nova<Local> = Nova::new_from_file(&elf_path).expect("failed to load guest program");
@@ -40,7 +43,8 @@ fn main() {
         Verify => {
             // Nova<T> doesn't derive Clone
             println!("Loading guest...");
-            let prover: Nova<Local> = Nova::new_from_file(&elf_path).expect("failed to load guest program");
+            let prover: Nova<Local> =
+                Nova::new_from_file(&elf_path).expect("failed to load guest program");
 
             println!("Proving execution of vm...");
             let proof = prover
@@ -50,9 +54,9 @@ fn main() {
             println!(
                 " output is {:?}!",
                 proof
-                .output::<Output>()
-                .expect("failed to deserialize output")
-                );
+                    .output::<Output>()
+                    .expect("failed to deserialize output")
+            );
 
             println!(">>>>> Logging\n{}<<<<<", proof.logs().join(""));
 
@@ -60,6 +64,6 @@ fn main() {
                 print!("Verifying execution...");
                 proof.verify(&pp).expect("failed to verify proof");
             }
-        },
+        }
     }
 }

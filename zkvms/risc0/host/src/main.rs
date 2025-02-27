@@ -1,7 +1,10 @@
-use zkvms_host_io::{Input, Output, foreach_input_field, benchmarkable, read_args, RunType::{ Execute, Prove, Verify }};
-use risc0_zkvm::{default_prover, default_executor, ExecutorEnv, Receipt};
-use risc0_zkp::core::digest::Digest;
 use hex::FromHex;
+use risc0_zkp::core::digest::Digest;
+use risc0_zkvm::{default_executor, default_prover, ExecutorEnv, Receipt};
+use zkvms_host_io::{
+    benchmarkable, foreach_input_field, read_args, Input, Output,
+    RunType::{Execute, Prove, Verify},
+};
 
 // https://github.com/risc0/risc0/blob/881e512732eca72849b2d0e263a1242aba3158af/risc0/build/src/lib.rs#L280-L284
 static HELLO_GUEST_ELF: &[u8] = include_bytes!("./guest");
@@ -11,7 +14,7 @@ static HELLO_GUEST_ID: &str = env!("GUEST_ID");
 
 fn build_env(input: &Input) -> ExecutorEnv {
     let mut builder = ExecutorEnv::builder();
-    foreach_input_field!{
+    foreach_input_field! {
         builder.write(&input.yield).unwrap();
     }
     builder.build().unwrap()
@@ -25,10 +28,7 @@ fn prove(env: ExecutorEnv) -> Receipt {
 }
 
 fn journal(receipt: Receipt) -> Output {
-    receipt
-        .journal
-        .decode()
-        .unwrap()
+    receipt.journal.decode().unwrap()
 }
 
 fn main() {
@@ -56,7 +56,7 @@ fn main() {
             let receipt = prove(env);
             println!("Output from journal: {:?}", journal(receipt));
         },
-        Verify => benchmarkable!{
+        Verify => benchmarkable! {
             // https://github.com/risc0/risc0/blob/881e512732eca72849b2d0e263a1242aba3158af/risc0/build/src/lib.rs#L197-L199
             let guest_id: Digest = Digest::from_hex(HELLO_GUEST_ID).unwrap();
 

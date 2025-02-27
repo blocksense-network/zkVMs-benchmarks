@@ -6,11 +6,7 @@ extern crate alloc;
 use alloc::vec::Vec;
 
 #[guests_macro::proving_entrypoint]
-pub fn main(
-    graph: Vec<Vec<bool>>,
-    colors: u32,
-    coloring: Vec<[u32; 2]>,
-) -> bool {
+pub fn main(graph: Vec<Vec<bool>>, colors: u32, coloring: Vec<[u32; 2]>) -> bool {
     // Does it use the correct amount of colors?
     let mut max_color = coloring[0][1];
     for nc in &coloring {
@@ -25,7 +21,7 @@ pub fn main(
     for i in 0..graph.len() {
         for j in 0..graph.len() {
             // graph[i][j] -> coloring[i] != coloring[j]
-            ret = ret & (! graph[i][j] | (coloring[i][1] != coloring[j][1]));
+            ret = ret & (!graph[i][j] | (coloring[i][1] != coloring[j][1]));
         }
     }
 

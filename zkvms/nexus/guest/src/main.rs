@@ -1,9 +1,9 @@
 #![cfg_attr(target_arch = "riscv32", no_std, no_main, allow(unused_imports))]
 
-use nexus_rt::{ postcard, println, read_private_input, write_output };
+use nexus_rt::{postcard, println, read_private_input, write_output};
 
 extern crate alloc;
-use alloc::{ vec::*, collections::* };
+use alloc::{collections::*, vec::*};
 use wrapper_macro::make_wrapper;
 
 #[nexus_rt::main]

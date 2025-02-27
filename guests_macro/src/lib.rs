@@ -1,5 +1,5 @@
-use std::{ fs::File, io::Write };
 use proc_macro::TokenStream;
+use std::{fs::File, io::Write};
 mod parse_fn;
 
 /// Create an `entrypoint_expr` macro inside the guest program. This will be
@@ -45,11 +45,17 @@ pub fn proving_entrypoint(_: TokenStream, mut item: TokenStream) -> TokenStream 
     writeln!(output, "{}", &format!("{args}").replace('\n', " "));
     write!(output, "{}", &format!("{ret}").replace('\n', " "));
 
-    item.extend(format!("#[macro_export]
+    item.extend(
+        format!(
+            "#[macro_export]
         macro_rules! entrypoint_expr {{
             () => {{
                 make_wrapper!{{{}{} -> {}}}
             }};
-        }}", name, args, ret).parse::<TokenStream>());
+        }}",
+            name, args, ret
+        )
+        .parse::<TokenStream>(),
+    );
     item
 }

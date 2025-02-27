@@ -1,4 +1,7 @@
-use zkvms_host_io::{benchmarkable, read_args, RunType::{ Execute, Prove, Verify }};
+use zkvms_host_io::{
+    benchmarkable, read_args,
+    RunType::{Execute, Prove, Verify},
+};
 
 type Input = (Vec<Vec<bool>>, u32, Vec<Vec<u32>>);
 
@@ -14,11 +17,11 @@ pub fn main() {
 
     match run_info.run_type {
         Execute => unreachable!(),
-        Prove => benchmarkable!{
+        Prove => benchmarkable! {
             let (output, _) = prove_guest(run_info.input.clone().into());
             println!("Prove output: {}", output);
         },
-        Verify => benchmarkable!{
+        Verify => benchmarkable! {
             let (_, proof) = prove_guest(run_info.input.clone().into());
             let is_valid = verify_guest(proof);
             println!("Verify is valid: {}", is_valid);
