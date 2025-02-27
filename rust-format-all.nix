@@ -1,7 +1,4 @@
-{ writeShellApplication
-, rustfmt
-,
-}:
+{ writeShellApplication, rustfmt, }:
 writeShellApplication {
   name = "rustfmt_all";
 

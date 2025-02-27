@@ -1,32 +1,18 @@
-{ zkvmLib,
-  stdenv,
-  lib,
-  just,
-  metacraft-labs,
-  pkg-config,
-  openssl,
-  craneLib-default,
-}:
+{ zkvmLib, stdenv, lib, just, metacraft-labs, pkg-config, openssl
+, craneLib-default, }:
 let
   commonArgs = {
     pname = "jolt";
     inherit (metacraft-labs.jolt) version;
 
-    src = with lib.fileset; toSource {
-      root = ../..;
-      fileset = intersection (gitTracked ../..) (unions [
-          ./.
-          ../../guests
-          ../../guests_macro
-          ../../zkvms_host_io
-      ]);
-    };
+    src = with lib.fileset;
+      toSource {
+        root = ../..;
+        fileset = intersection (gitTracked ../..)
+          (unions [ ./. ../../guests ../../guests_macro ../../zkvms_host_io ]);
+      };
 
-    nativeBuildInputs = [
-      metacraft-labs.jolt
-      openssl
-      pkg-config
-    ];
+    nativeBuildInputs = [ metacraft-labs.jolt openssl pkg-config ];
   };
 
   craneLib = craneLib-default.overrideToolchain metacraft-labs.jolt;
@@ -35,27 +21,25 @@ let
       sed -i '/dependencies.guest/,+1d' zkvms/jolt/host/Cargo.toml
     '';
   });
-in
-  zkvmLib.buildPackage craneLib (commonArgs
-    // {
-      inherit cargoArtifacts;
+in zkvmLib.buildPackage craneLib (commonArgs // {
+  inherit cargoArtifacts;
 
-      guestTarget = "riscv32im-jolt-zkvm-elf";
-      guestExtraArgs = "--features guest";
+  guestTarget = "riscv32im-jolt-zkvm-elf";
+  guestExtraArgs = "--features guest";
 
-      preBuildGuest = ''
-        RUSTUP_TOOLCHAIN="x"
-        RUSTFLAGS="-C link-arg=-T${./guest/guest.ld} -C passes=lower-atomic -C panic=abort -C strip=symbols -C opt-level=z"
-        export RUSTUP_TOOLCHAIN RUSTFLAGS
-      '';
+  preBuildGuest = ''
+    RUSTUP_TOOLCHAIN="x"
+    RUSTFLAGS="-C link-arg=-T${
+      ./guest/guest.ld
+    } -C passes=lower-atomic -C panic=abort -C strip=symbols -C opt-level=z"
+    export RUSTUP_TOOLCHAIN RUSTFLAGS
+  '';
 
-      preRunBinaries = [
-        metacraft-labs.jolt
-      ];
+  preRunBinaries = [ metacraft-labs.jolt ];
 
-      preRun = ''
-        export ELF_PATH="$out/bin/guest"
-      '';
+  preRun = ''
+    export ELF_PATH="$out/bin/guest"
+  '';
 
-      doCheck = false;
-    })
+  doCheck = false;
+})

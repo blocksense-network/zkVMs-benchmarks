@@ -1,15 +1,9 @@
-{ writeShellApplication,
-  guest,
-  zkvms,
-  hostPackages,
-  lib,
-}:
+{ writeShellApplication, guest, zkvms, hostPackages, lib, }:
 writeShellApplication {
   name = "${guest}";
 
-  runtimeInputs = lib.foldr
-    (zkvm: accum: accum ++ [ hostPackages."${zkvm}/${guest}" ])
-    []
+  runtimeInputs =
+    lib.foldr (zkvm: accum: accum ++ [ hostPackages."${zkvm}/${guest}" ]) [ ]
     zkvms;
 
   text = ''
@@ -17,8 +11,8 @@ writeShellApplication {
       echo "$1"
       "$@"
     }
-  '' + lib.foldr
-    (zkvm: accum: "runZKVM \"${hostPackages."${zkvm}/${guest}"}/bin/${zkvm}_${guest}\" \"$@\"\n" + accum)
-    ""
-    zkvms;
+  '' + lib.foldr (zkvm: accum:
+    ''
+      runZKVM "${hostPackages."${zkvm}/${guest}"}/bin/${zkvm}_${guest}" "$@"
+    '' + accum) "" zkvms;
 }
