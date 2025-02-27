@@ -71,5 +71,7 @@
     packages.${system} = hostPackages // guestPackages // {
       rust-format-all = callPackage ./rust-format-all.nix { };
     };
+
+    formatter.${system} = pkgs.nixfmt;
   };
 }
