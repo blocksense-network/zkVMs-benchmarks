@@ -1,16 +1,5 @@
-{ zkvmLib,
-  lib,
-  just,
-  metacraft-labs,
-  metacraft-labs-old,
-  rust-bin,
-  protobuf,
-  pkg-config,
-  openssl,
-  buildGoModule,
-  fetchFromGitHub,
-  craneLib-default,
-}:
+{ zkvmLib, lib, just, metacraft-labs, metacraft-labs-old, rust-bin, protobuf
+, pkg-config, openssl, buildGoModule, fetchFromGitHub, craneLib-default, }:
 let
   zkm_libsnark = buildGoModule rec {
     pname = "zkm_libsnark";
@@ -40,63 +29,48 @@ let
     pname = "zkm";
     inherit (metacraft-labs.zkm) version;
 
-    src = with lib.fileset; toSource {
-      root = ../..;
-      fileset = intersection (gitTracked ../..) (unions [
-          ./.
-          ../../guests
-          ../../guests_macro
-          ../../zkvms_host_io
-      ]);
-    };
+    src = with lib.fileset;
+      toSource {
+        root = ../..;
+        fileset = intersection (gitTracked ../..)
+          (unions [ ./. ../../guests ../../guests_macro ../../zkvms_host_io ]);
+      };
 
-    nativeBuildInputs = [
-      pkg-config
-      openssl
-      protobuf
-      metacraft-labs.zkm
-    ];
+    nativeBuildInputs = [ pkg-config openssl protobuf metacraft-labs.zkm ];
 
     overrideVendorGitCheckout = ps: drv:
-      if drv.src.shortRev == "155221d" && builtins.any (p: p.name == "zkm-sdk") ps then
-        drv.overrideAttrs (_: {
-          patches = [
-            ./0001-chore-Increase-DEGREE_BITS_RANGE.patch
-          ];
-        })
+      if drv.src.shortRev == "155221d"
+      && builtins.any (p: p.name == "zkm-sdk") ps then
+        drv.overrideAttrs
+        (_: { patches = [ ./0001-chore-Increase-DEGREE_BITS_RANGE.patch ]; })
       else
         drv;
   };
 
   craneLib = craneLib-default.overrideToolchain metacraft-labs.zkm;
   cargoArtifacts = zkvmLib.buildDepsOnly craneLib commonArgs;
-in
-  zkvmLib.buildPackage craneLib (commonArgs
-    // {
-      inherit cargoArtifacts;
+in zkvmLib.buildPackage craneLib (commonArgs // {
+  inherit cargoArtifacts;
 
-      guestTarget = "mips-zkm-zkvm-elf";
+  guestTarget = "mips-zkm-zkvm-elf";
 
-      preBuildGuest = ''
-        # https://github.com/zkMIPS/zkm/blob/0e62a053970eb25c81aa409d0c7234f5611a192d/build/src/command/utils.rs#L45-L61
-        export RUSTFLAGS="-C target-cpu=mips2 -C target-feature=+crt-static -C link-arg=-nostdlib -C link-arg=-g -C link-arg=--entry=main"
-      '';
+  preBuildGuest = ''
+    # https://github.com/zkMIPS/zkm/blob/0e62a053970eb25c81aa409d0c7234f5611a192d/build/src/command/utils.rs#L45-L61
+    export RUSTFLAGS="-C target-cpu=mips2 -C target-feature=+crt-static -C link-arg=-nostdlib -C link-arg=-g -C link-arg=--entry=main"
+  '';
 
-      preBuild = ''
-        export RUSTFLAGS="-L ${zkm_libsnark}/lib"
-      '';
+  preBuild = ''
+    export RUSTFLAGS="-L ${zkm_libsnark}/lib"
+  '';
 
-      hostToolchain = metacraft-labs-old.zkm;
+  hostToolchain = metacraft-labs-old.zkm;
 
-      preRunLibraries = [
-        openssl
-        zkm_libsnark
-      ];
+  preRunLibraries = [ openssl zkm_libsnark ];
 
-      preRun = ''
-        export ELF_PATH="$out/bin/guest"
-        export PKG_CONFIG_PATH='${openssl.dev}/lib/pkgconfig' # Dirty hack
-      '';
+  preRun = ''
+    export ELF_PATH="$out/bin/guest"
+    export PKG_CONFIG_PATH='${openssl.dev}/lib/pkgconfig' # Dirty hack
+  '';
 
-      doCheck = false;
-    })
+  doCheck = false;
+})
