@@ -4,8 +4,8 @@
 use wrapper_macro::make_wrapper;
 
 extern crate alloc;
-use alloc::{ vec::*, collections::* };
-use zkm_runtime::io::{ read, commit };
+use alloc::{collections::*, vec::*};
+use zkm_runtime::io::{commit, read};
 
 zkm_runtime::entrypoint!(main);
 

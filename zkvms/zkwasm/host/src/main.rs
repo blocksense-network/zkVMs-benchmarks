@@ -1,6 +1,11 @@
-use zkvms_host_io::{PublicInput, PrivateInput, foreach_public_input_field, foreach_private_input_field, benchmarkable, read_args, RunType::{Execute, Prove, Verify}, RunWith};
 use std::io::{self, Write};
 use std::process::{Command, Stdio};
+use zkvms_host_io::{
+    benchmarkable, foreach_private_input_field, foreach_public_input_field, read_args,
+    PrivateInput, PublicInput,
+    RunType::{Execute, Prove, Verify},
+    RunWith,
+};
 
 static PUBLIC_INPUT_PATH: &str = "public_input.bin";
 static PRIVATE_INPUT_PATH: &str = "private_input.bin";
@@ -12,13 +17,8 @@ static PRIVATE_INPUT_PATH: &str = "private_input.bin";
 /// If `flat` is "[[0,1], [2,3,4], []]"
 /// Output will be "3[2[0,1], 3[2,3,4], 0[]]"
 fn get_with_sizes(flat: &str) -> String {
-    let mut values = flat
-        .split('[')
-        .map(|x| x.trim())
-        .skip(1);
-    let current = values
-        .next()
-        .unwrap_or(flat);
+    let mut values = flat.split('[').map(|x| x.trim()).skip(1);
+    let current = values.next().unwrap_or(flat);
 
     // 1D collection or not a collection
     if current != "" {
@@ -30,26 +30,21 @@ fn get_with_sizes(flat: &str) -> String {
             .map(|x| (x == ',') as usize)
             .sum::<usize>();
 
-        (if size > 1 { size.to_string() } else { String::new() })
-            + "["
+        (if size > 1 {
+            size.to_string()
+        } else {
+            String::new()
+        }) + "["
             + current
-            + &values
-                .map(|x| "[".to_string() + x)
-                .collect::<String>()
+            + &values.map(|x| "[".to_string() + x).collect::<String>()
     }
     // ND collection
     else {
-        let size: usize = values
-            .clone()
-            .count();
+        let size: usize = values.clone().count();
 
-        let subcollections = values
-            .map(|x| get_with_sizes(x))
-            .collect::<String>();
+        let subcollections = values.map(|x| get_with_sizes(x)).collect::<String>();
 
-        size.to_string()
-            + "["
-            + &subcollections
+        size.to_string() + "[" + &subcollections
     }
 }
 
@@ -66,7 +61,7 @@ macro_rules! build_input {
     ($input:expr , $path:ident , $type:ident) => {
         |run_info: &RunWith| {
             let mut ret: Vec<u64> = Vec::new();
-            $type!{
+            $type! {
                 // Simplify input string
                 let flat = format!("{:?}", $input.yield)
                     .replace("false", "0")
@@ -118,9 +113,12 @@ macro_rules! build_input {
 fn zkwasm_command(subcmd: &str) -> Command {
     let mut command = Command::new("zkwasm-cli");
     command
-        .arg("--params").arg("./params")
-        .arg("prog").arg(subcmd)
-        .arg("--wasm").arg(env!("GUEST_PATH"));
+        .arg("--params")
+        .arg("./params")
+        .arg("prog")
+        .arg(subcmd)
+        .arg("--wasm")
+        .arg(env!("GUEST_PATH"));
     command
 }
 
@@ -131,52 +129,40 @@ fn run(cmd: &mut Command) {
 fn main() {
     let run_info = read_args();
 
-    let k = run_info
-        .env_or(
-            "ZKWASM_K",
-            "19",
-        );
+    let k = run_info.env_or("ZKWASM_K", "19");
 
-    let scheme = run_info
-        .env_or(
-            "ZKWASM_SCHEME",
-            "shplonk",
-        );
+    let scheme = run_info.env_or("ZKWASM_SCHEME", "shplonk");
 
     run(zkwasm_command("setup")
-        .arg("-k").arg(k)
-        .arg("--scheme").arg(scheme));
+        .arg("-k")
+        .arg(k)
+        .arg("--scheme")
+        .arg(scheme));
 
     let public_input = build_input!(
         run_info.public_input,
         PUBLIC_INPUT_PATH,
-        foreach_public_input_field)(&run_info);
+        foreach_public_input_field
+    )(&run_info);
 
     let private_input = build_input!(
         run_info.private_input,
         PRIVATE_INPUT_PATH,
-        foreach_private_input_field)(&run_info);
+        foreach_private_input_field
+    )(&run_info);
 
-    let output = run_info
-        .env_or(
-            "ZKWASM_OUTPUT",
-            "./output",
-        );
+    let output = run_info.env_or("ZKWASM_OUTPUT", "./output");
 
-    let params = run_info
-        .env_or(
-            "ZKWASM_PARAMS",
-            "./params",
-        );
+    let params = run_info.env_or("ZKWASM_PARAMS", "./params");
 
     match run_info.run_type {
-        Execute => benchmarkable!{
+        Execute => benchmarkable! {
             run(zkwasm_command("dry-run")
                 .arg("--public").arg(public_input.clone())
                 .arg("--private").arg(private_input.clone())
                 .arg("--output").arg(output.clone()));
         },
-        Prove => benchmarkable!{
+        Prove => benchmarkable! {
             run(zkwasm_command("prove")
                 .arg("--public").arg(public_input.clone())
                 .arg("--private").arg(private_input.clone())
@@ -184,16 +170,19 @@ fn main() {
         },
         Verify => {
             run(zkwasm_command("prove")
-                .arg("--public").arg(public_input)
-                .arg("--private").arg(private_input)
-                .arg("--output").arg(output.clone()));
+                .arg("--public")
+                .arg(public_input)
+                .arg("--private")
+                .arg(private_input)
+                .arg("--output")
+                .arg(output.clone()));
 
-            benchmarkable!{
+            benchmarkable! {
                 run(Command::new("zkwasm-cli")
                     .arg("--params").arg(params.clone())
                     .arg("prog").arg("verify")
                     .arg("--output").arg(output.clone()));
             }
-        },
+        }
     }
 }

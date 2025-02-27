@@ -1,12 +1,16 @@
 use clap::{Parser, ValueEnum};
-use num_traits::NumCast;
-use serde::{ Serialize, Deserialize };
 use env_file_reader::read_str;
-use std::{env, option::Option, fs::read_to_string, collections::*};
-pub use input_macros::{ foreach_input_field, foreach_public_input_field, foreach_private_input_field, benchmarkable };
+pub use input_macros::{
+    benchmarkable, foreach_input_field, foreach_private_input_field, foreach_public_input_field,
+};
+use num_traits::NumCast;
+use serde::{Deserialize, Serialize};
+use std::{collections::*, env, fs::read_to_string, option::Option};
 
-static DEFAULT_PUBLIC_INPUT: &str = include_str!(concat!(env!("INPUTS_DIR"), "/default_public_input.toml"));
-static DEFAULT_PRIVATE_INPUT: &str = include_str!(concat!(env!("INPUTS_DIR"), "/default_private_input.toml"));
+static DEFAULT_PUBLIC_INPUT: &str =
+    include_str!(concat!(env!("INPUTS_DIR"), "/default_public_input.toml"));
+static DEFAULT_PRIVATE_INPUT: &str =
+    include_str!(concat!(env!("INPUTS_DIR"), "/default_private_input.toml"));
 static DEFAULT_ENV: &str = include_str!(concat!(env!("INPUTS_DIR"), "/default.env"));
 
 /// A CLI tool for running and benchmarking guest programs inside a zkVM
@@ -79,15 +83,18 @@ impl RunWith {
     /// function is executed to convert the String value.
     ///
     /// The default environment is taken from the guest's `default.env`
-    pub fn env_then_or<T>(&self, variable_name: &str, then_apply: fn(String) -> Option<T>, else_const: T) -> T {
-        env::var(variable_name)
-            .ok()
-            .and_then(then_apply)
-            .unwrap_or(self
-                .default_env
+    pub fn env_then_or<T>(
+        &self,
+        variable_name: &str,
+        then_apply: fn(String) -> Option<T>,
+        else_const: T,
+    ) -> T {
+        env::var(variable_name).ok().and_then(then_apply).unwrap_or(
+            self.default_env
                 .get(variable_name)
                 .and_then(|x| then_apply(x.clone()))
-                .unwrap_or(else_const))
+                .unwrap_or(else_const),
+        )
     }
 
     /// Returns a value of the given name from the environment,
@@ -106,15 +113,15 @@ pub fn read_args() -> RunWith {
     let cli = Cli::parse();
 
     let public_contents: String = if cli.public_input.is_some() {
-            read_to_string(cli.public_input.unwrap()).unwrap()
-        } else {
-            DEFAULT_PUBLIC_INPUT.to_string()
-        };
+        read_to_string(cli.public_input.unwrap()).unwrap()
+    } else {
+        DEFAULT_PUBLIC_INPUT.to_string()
+    };
     let private_contents: String = if cli.private_input.is_some() {
-            read_to_string(cli.private_input.unwrap()).unwrap()
-        } else {
-            DEFAULT_PRIVATE_INPUT.to_string()
-        };
+        read_to_string(cli.private_input.unwrap()).unwrap()
+    } else {
+        DEFAULT_PRIVATE_INPUT.to_string()
+    };
     let input: Input = toml::from_str(&(public_contents.clone() + &private_contents)).unwrap();
     let public_input: PublicInput = toml::from_str(&public_contents).unwrap();
     let private_input: PrivateInput = toml::from_str(&private_contents).unwrap();

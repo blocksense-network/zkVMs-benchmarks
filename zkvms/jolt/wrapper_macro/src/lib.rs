@@ -4,7 +4,7 @@ use quote::quote;
 
 #[path = "../../../../guests_macro/src/parse_fn.rs"]
 mod parse_fn;
-use crate::parse_fn::{ split_fn, args_split, args_divide, group_streams };
+use crate::parse_fn::{args_divide, args_split, group_streams, split_fn};
 
 /// Create a set of three helper functions.
 ///
@@ -54,10 +54,28 @@ pub fn make_wrapper(item: TokenStream) -> TokenStream {
     out.extend(format!("zkp::{}{}", name, ts_patterns).parse::<TokenStream>());
 
     let mut func = TokenStream::new();
-    func.extend(format!("#[jolt::provable(max_input_size = 100000)] fn guest{} -> {} {{ {} }}", args, ret, out).parse::<TokenStream>());
+    func.extend(
+        format!(
+            "#[jolt::provable(max_input_size = 100000)] fn guest{} -> {} {{ {} }}",
+            args, ret, out
+        )
+        .parse::<TokenStream>(),
+    );
 
-    func.extend(make_build_fn(patterns.clone(), types.clone(), ts_patterns.clone(), ts_types.clone(), ret.clone()));
-    func.extend(make_preprocess_fn(patterns, types, ts_patterns, ts_types, ret));
+    func.extend(make_build_fn(
+        patterns.clone(),
+        types.clone(),
+        ts_patterns.clone(),
+        ts_types.clone(),
+        ret.clone(),
+    ));
+    func.extend(make_preprocess_fn(
+        patterns,
+        types,
+        ts_patterns,
+        ts_types,
+        ret,
+    ));
     func
 }
 
@@ -75,7 +93,11 @@ fn make_build_fn(
     let types = types.iter().map(|t| TokenStream2::from(t.clone()));
     let ts_patterns = TokenStream2::from(ts_patterns);
     let ts_types = TokenStream2::from(ts_types);
-    let ret = if ret.is_empty() { quote!{ () } } else { TokenStream2::from(ret) };
+    let ret = if ret.is_empty() {
+        quote! { () }
+    } else {
+        TokenStream2::from(ret)
+    };
 
     let imports = make_imports();
 
@@ -109,7 +131,8 @@ fn make_build_fn(
 
             (prove_closure, verify_closure)
         }
-    }.into()
+    }
+    .into()
 }
 
 fn make_preprocess_fn(
@@ -123,7 +146,11 @@ fn make_preprocess_fn(
     let types = types.iter().map(|t| TokenStream2::from(t.clone()));
     let ts_patterns = TokenStream2::from(ts_patterns);
     let ts_types = TokenStream2::from(ts_types);
-    let ret = if ret.is_empty() { quote!{ () } } else { TokenStream2::from(ret) };
+    let ret = if ret.is_empty() {
+        quote! { () }
+    } else {
+        TokenStream2::from(ret)
+    };
 
     let imports = make_imports();
 
@@ -159,7 +186,8 @@ fn make_preprocess_fn(
 
             (program, preprocessing)
         }
-    }.into()
+    }
+    .into()
 }
 
 fn make_imports() -> TokenStream2 {

@@ -2,7 +2,7 @@ use proc_macro::TokenStream;
 
 #[path = "../../../../guests_macro/src/parse_fn.rs"]
 mod parse_fn;
-use crate::parse_fn::{ split_fn, args_split, args_divide_public, args_divide_grouped };
+use crate::parse_fn::{args_divide_grouped, args_divide_public, args_split, split_fn};
 
 /// Create a body, which reads all inputs, stores them in variables, then
 /// commits the ones, defined as public in `default_public_input.toml` to the
@@ -40,11 +40,14 @@ pub fn make_wrapper(item: TokenStream) -> TokenStream {
         out.extend(format!("let {} = read();", arg).parse::<TokenStream>());
     }
 
-    let public_inputs = toml::from_str::<toml::Table>(
-            include_str!(concat!(env!("INPUTS_DIR"), "/default_public_input.toml"))
-        )
-        .unwrap();
-    let public_patterns = args_divide_public(&args, &public_inputs.keys().collect()).0.0;
+    let public_inputs = toml::from_str::<toml::Table>(include_str!(concat!(
+        env!("INPUTS_DIR"),
+        "/default_public_input.toml"
+    )))
+    .unwrap();
+    let public_patterns = args_divide_public(&args, &public_inputs.keys().collect())
+        .0
+         .0;
     for pattern in public_patterns.iter() {
         out.extend(format!("commit(&{});", pattern).parse::<TokenStream>());
     }

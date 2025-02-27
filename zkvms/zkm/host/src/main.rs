@@ -1,8 +1,15 @@
 use anyhow::{bail, Result};
 use std::{env, fs::read, time::Instant};
-use zkm_sdk::{prover::ClientCfg, prover::{ProverInput, ProverResult} , ProverClient};
+use zkm_sdk::{
+    prover::ClientCfg,
+    prover::{ProverInput, ProverResult},
+    ProverClient,
+};
 
-use zkvms_host_io::{read_args, benchmarkable, RunType::{ Execute, Prove, Verify }};
+use zkvms_host_io::{
+    benchmarkable, read_args,
+    RunType::{Execute, Prove, Verify},
+};
 
 async fn setup(
     prover_client: &mut ProverClient,
@@ -26,16 +33,12 @@ async fn get_proof(
 
     if let Ok(Some(prover_result)) = proving_result {
         prover_result
-    }
-    else {
+    } else {
         panic!("Failed to generate proof!");
     }
 }
 
-async fn execute(
-    prover_client: &mut ProverClient,
-    prover_input: &mut ProverInput,
-) {
+async fn execute(prover_client: &mut ProverClient, prover_input: &mut ProverInput) {
     let prover_result = get_proof(prover_client, prover_input).await;
 
     prover_client
@@ -52,12 +55,7 @@ async fn prove(
     let prover_result = get_proof(prover_client, prover_input).await;
 
     prover_client
-        .process_proof_results(
-            &prover_result,
-            &prover_input,
-            &proof_results_path,
-            "local",
-        )
+        .process_proof_results(&prover_result, &prover_input, &proof_results_path, "local")
         .expect("process proof results error");
 }
 
@@ -68,30 +66,14 @@ async fn main() -> Result<()> {
         panic!("Off-chain verification is not supported!");
     }
 
-    let seg_size: u32 = run_info
-        .env_then_or(
-            "SEG_SIZE",
-            |seg| seg.parse::<u32>().ok(),
-            65536,
-        );
+    let seg_size: u32 = run_info.env_then_or("SEG_SIZE", |seg| seg.parse::<u32>().ok(), 65536);
 
     let elf_path = env::var("ELF_PATH").expect("ELF PATH is missing");
 
-    let proof_results_path = run_info
-        .env_or(
-            "PROOF_RESULTS_PATH",
-            "/tmp/contracts",
-        );
-    let vk_path = run_info
-        .env_or(
-            "VERIFYING_KEY_PATH",
-            "/tmp/input",
-        );
+    let proof_results_path = run_info.env_or("PROOF_RESULTS_PATH", "/tmp/contracts");
+    let vk_path = run_info.env_or("VERIFYING_KEY_PATH", "/tmp/input");
 
-    let mut client_config = ClientCfg::new(
-        "local".to_string(),
-        vk_path.to_owned(),
-    );
+    let mut client_config = ClientCfg::new("local".to_string(), vk_path.to_owned());
 
     let mut prover_client = ProverClient::new(&client_config).await;
 
@@ -118,11 +100,11 @@ async fn main() -> Result<()> {
 
     match run_info.run_type {
         // only excute the guest program without generating the proof.
-        Execute => benchmarkable!{
+        Execute => benchmarkable! {
             execute(&mut prover_client, &mut prover_input).await;
         },
         // excute the guest program and generate the proof
-        Prove => benchmarkable!{
+        Prove => benchmarkable! {
             prove(&mut prover_client, &mut prover_input, &vk_path, &proof_results_path).await;
         },
         Verify => unreachable!(),
