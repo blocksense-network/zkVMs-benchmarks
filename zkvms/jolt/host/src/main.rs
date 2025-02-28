@@ -19,12 +19,12 @@ pub fn main() {
         Execute => unreachable!(),
         Prove => benchmarkable! {
             let (output, _) = prove_guest(run_info.input.clone().into());
-            println!("Prove output: {}", output);
+            println!("Prove output: {:?}", output);
         },
         Verify => benchmarkable! {
             let (_, proof) = prove_guest(run_info.input.clone().into());
             let is_valid = verify_guest(proof);
-            println!("Verify is valid: {}", is_valid);
+            println!("Verify is valid: {:?}", is_valid);
         },
     }
 }
