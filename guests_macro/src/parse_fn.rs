@@ -50,6 +50,9 @@ pub fn split_fn(item: &TokenStream) -> (TokenStream, TokenStream, TokenStream) {
         out.extend([tt].into_iter());
     }
 
+    if ret.is_empty() {
+        ret.extend([TokenTree::Group(Group::new(Delimiter::Parenthesis, TokenStream::new()))].into_iter());
+    }
     (name, args, ret)
 }
 
