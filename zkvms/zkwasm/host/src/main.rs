@@ -10,44 +10,6 @@ use zkvms_host_io::{
 static PUBLIC_INPUT_PATH: &str = "public_input.bin";
 static PRIVATE_INPUT_PATH: &str = "private_input.bin";
 
-/// Inserts array sizes before every square bracket
-///
-/// # Example
-///
-/// If `flat` is "[[0,1], [2,3,4], []]"
-/// Output will be "3[2[0,1], 3[2,3,4], 0[]]"
-fn get_with_sizes(flat: &str) -> String {
-    let mut values = flat.split('[').map(|x| x.trim()).skip(1);
-    let current = values.next().unwrap_or(flat);
-
-    // 1D collection or not a collection
-    if current != "" {
-        let size = 1 + current
-            .clone()
-            .to_string()
-            .chars()
-            .take_while(|x| *x != ']')
-            .map(|x| (x == ',') as usize)
-            .sum::<usize>();
-
-        (if size > 1 {
-            size.to_string()
-        } else {
-            String::new()
-        }) + "["
-            + current
-            + &values.map(|x| "[".to_string() + x).collect::<String>()
-    }
-    // ND collection
-    else {
-        let size: usize = values.clone().count();
-
-        let subcollections = values.map(|x| get_with_sizes(x)).collect::<String>();
-
-        size.to_string() + "[" + &subcollections
-    }
-}
-
 /// Creates an anonymous function which takes `run_info`, "serializes" the
 /// specified input, outputs it into a file and returns a "path:<PATH>"
 /// argument, ready to be passed to zkWasm.
@@ -60,47 +22,12 @@ fn get_with_sizes(flat: &str) -> String {
 macro_rules! build_input {
     ($input:expr , $path:ident , $type:ident) => {
         |run_info: &RunWith| {
-            let mut ret: Vec<u64> = Vec::new();
+            let mut all = Vec::new();
             $type! {
-                // Simplify input string
-                let flat = format!("{:?}", $input.yield)
-                    .replace("false", "0")
-                    .replace("true",  "1")
-                    .replace('(', "[")
-                    .replace(')', "]")
-                    .replace('{', "[")
-                    .replace('}', "]");
-
-                let flat = get_with_sizes(&flat);
-
-                let values = flat
-                    .replace('[', ",")
-                    .replace(']', " ")
-                    .replace(':', ",")
-                    .split(',')
-                    .map(|val| {
-                        let val = val.trim();
-                        if let Some(num) = val.parse::<u64>().ok() {
-                            vec![num]
-                        }
-                        else {
-                            let val = val.trim_matches('"');
-                            let mut size = vec![val.len() as u64];
-                            size.extend(val
-                                .bytes()
-                                .into_iter()
-                                .map(|x| x as u64)
-                                .collect::<Vec<u64>>());
-                            size
-                        }
-                    })
-                    .flatten()
-                    .collect::<Vec<u64>>();
-
-                ret.extend(values);
+                all.extend(tobytes::to_bytes!($input.yield));
             }
-            let bytes = ret
-                .iter()
+            let bytes = all
+                .into_iter()
                 .map(|x| x.to_be_bytes())
                 .flatten()
                 .collect::<Vec<u8>>();
