@@ -78,7 +78,10 @@ pub fn make_wrapper(item: TokenStream) -> TokenStream {
         format!(
             "
         let result = zkp::{}{};
-        write(result as u64);
+        let bytes = tobytes::to_bytes!(result);
+        for val in bytes.into_iter() {{
+            write(val);
+        }}
     ",
             name, ts_patterns
         )
