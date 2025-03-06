@@ -65,10 +65,11 @@
 
       guestPackages = foldr (guest: accum:
         accum // {
-          ${guest} = callPackage ./guest.nix {
+          ${guest} = callPackage ./zkvms_guest_io/default.nix {
             inherit guest;
             inherit zkvms;
             inherit hostPackages;
+            inherit craneLib-default;
           };
         }) { } guests;
     in {
