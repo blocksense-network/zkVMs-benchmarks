@@ -95,7 +95,7 @@ As already discussed in "[Run/benchmark a "built-in" program](#runbenchmark-a-bu
 The first form executes/proves/verifies the **default** program (currently `graph_coloring`) with the selected zkVM, the second selects a given program to be ran across **all** zkVMs and the third chooses a specific zkVM and program to act upon.
 
 All command parameters after `--` are passed to it.
-As a start, you should look at the built-in help message.
+As a start, you should look at the built-in help messages.
 Further in this section there are some common configurations of arguments you may want to use.
 
 ```sh
@@ -130,6 +130,27 @@ Options:
           replacing it
   -h, --help
           Print help
+```
+
+```sh
+nix run github:blocksense-network/zkVMs-benchmarks#fibonacci -- --help
+```
+
+```
+A CLI tool for running and benchmarking a guest program inside all supported zkVMs. This bina
+ry has been built with a single guest program in mind. If you want to run or benchmark your o
+wn guest program inside a zkVM, head on over to https://github.com/blocksense-network/zkVMs-b
+enchmarks
+
+Usage: fibonacci [OPTIONS] [ZKVM_ARGS]...
+
+Arguments:
+  [ZKVM_ARGS]...  Arguments which are passed to each tool for a single guest and single zkVM
+
+Options:
+  -i, --ignore <IGNORE>...  Ignored zkVMs. Values are substrings of names
+  -f, --fail-propagation    Make one failiure stop the entire process
+  -h, --help                Print help
 ```
 
 ### Example: benchmark a single program
