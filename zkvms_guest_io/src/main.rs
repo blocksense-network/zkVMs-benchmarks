@@ -1,5 +1,9 @@
 use clap::Parser;
 use std::process::{Command, Stdio};
+use std::sync::{
+    atomic::{AtomicBool, Ordering},
+    Arc,
+};
 use std::thread;
 use std::time::Duration;
 
@@ -15,6 +19,10 @@ struct Cli {
     #[arg(short, long, value_delimiter = ',', num_args = 1..)]
     ignore: Option<Vec<String>>,
 
+    /// Make one failiure stop the entire process
+    #[arg(short, long)]
+    fail_propagation: bool,
+
     /// Arguments which are passed to each tool for a single guest and single zkVM
     #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
     zkvm_args: Vec<String>,
@@ -29,6 +37,7 @@ fn main() {
         .collect();
     let mut threads = Vec::new();
     let ignored = cli.ignore.unwrap_or(Vec::new());
+    let fail = Arc::new(AtomicBool::new(false));
 
     for guest in guests.into_iter() {
         if ignored.iter().any(|i| guest.contains(i)) {
@@ -36,6 +45,7 @@ fn main() {
         }
 
         let args = cli.zkvm_args.clone();
+        let fail = fail.clone();
         threads.push(
             thread::Builder::new()
                 .name(format!(r#"Running "{}""#, guest))
@@ -53,12 +63,22 @@ fn main() {
                     }
 
                     print!("== Executing {} ==\n{}", guest, stdout);
+                    if !output.status.success() {
+                        // Make sure we print a message before failing
+                        // There could be a race condition, where we fail, then while
+                        // panic is doing it's thing, the main thread exits.
+                        println!("Program didn't exist successfully!");
+                        fail.store(true, Ordering::Relaxed);
+                        panic!();
+                    }
                 })
                 .unwrap(),
         );
     }
 
-    while threads.iter().any(|t| !t.is_finished()) {
+    while threads.iter().any(|t| !t.is_finished())
+        && (!cli.fail_propagation || !fail.load(Ordering::Relaxed))
+    {
         thread::sleep(Duration::from_millis(200));
     }
 }
