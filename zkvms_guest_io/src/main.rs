@@ -64,12 +64,7 @@ fn main() {
 
                     print!("== Executing {} ==\n{}", guest, stdout);
                     if !output.status.success() {
-                        // Make sure we print a message before failing
-                        // There could be a race condition, where we fail, then while
-                        // panic is doing it's thing, the main thread exits.
-                        println!("Program didn't exist successfully!");
                         fail.store(true, Ordering::Relaxed);
-                        panic!();
                     }
                 })
                 .expect("failed to spawn thread"),
