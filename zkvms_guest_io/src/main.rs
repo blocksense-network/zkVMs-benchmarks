@@ -25,39 +25,46 @@ struct Cli {
 fn main() {
     let cli = Cli::parse();
 
-    let guests: Vec<&str> = env!("PROGRAMS")
+    let zkvm_guest_commands: Vec<&str> = env!("PROGRAMS")
         .split(',')
         .filter(|x| !x.is_empty())
         .collect();
     let ignored = cli.ignore.unwrap_or(Vec::new());
 
-    for guest in guests.into_iter() {
-        if ignored.iter().any(|i| guest.contains(i)) {
+    for zkvm_guest_command in zkvm_guest_commands.into_iter() {
+        if ignored.iter().any(|i| zkvm_guest_command.contains(i)) {
             continue;
         }
 
-        println!("== Executing {} ==", guest);
+        println!("== Executing {} ==", zkvm_guest_command);
 
-        let output = Command::new(guest)
+        let output = Command::new(zkvm_guest_command)
             .args(cli.zkvm_args.clone())
             .stdout(Stdio::piped())
             .output();
 
         if let Err(msg) = output {
-            println!("Failed to run command {}!", guest);
+            println!("Failed to run command {}!", zkvm_guest_command);
             println!("{msg}");
             if cli.fail_propagation {
                 break;
             }
             continue;
         }
+        // The if above makes sure this is an Ok
         let output = output.unwrap();
 
         if !output.stdout.is_empty() {
-            print!("{}", String::from_utf8(output.stdout).unwrap());
+            print!(
+                "{}",
+                String::from_utf8(output.stdout).expect("failed to convert stdout to String")
+            );
         }
         if !output.stderr.is_empty() {
-            print!("{}", String::from_utf8(output.stderr).unwrap());
+            print!(
+                "{}",
+                String::from_utf8(output.stderr).expect("failed to convert stderr to String")
+            );
         }
 
         if cli.fail_propagation && !output.status.success() {
