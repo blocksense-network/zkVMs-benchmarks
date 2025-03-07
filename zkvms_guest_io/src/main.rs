@@ -54,7 +54,7 @@ fn main() {
                         .args(args)
                         .stdout(Stdio::piped())
                         .output()
-                        .expect("error occured!");
+                        .expect("failed to run command");
 
                     let mut stdout = String::from_utf8(output.stdout).unwrap();
                     if !output.stderr.is_empty() {
@@ -72,7 +72,7 @@ fn main() {
                         panic!();
                     }
                 })
-                .unwrap(),
+                .expect("failed to spawn thread"),
         );
     }
 
