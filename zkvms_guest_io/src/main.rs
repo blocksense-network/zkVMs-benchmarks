@@ -1,11 +1,5 @@
 use clap::Parser;
 use std::process::{Command, Stdio};
-use std::sync::{
-    atomic::{AtomicBool, Ordering},
-    Arc,
-};
-use std::thread;
-use std::time::Duration;
 
 /// A CLI tool for running and benchmarking a guest program inside all
 /// supported zkVMs.
@@ -35,45 +29,39 @@ fn main() {
         .split(',')
         .filter(|x| !x.is_empty())
         .collect();
-    let mut threads = Vec::new();
     let ignored = cli.ignore.unwrap_or(Vec::new());
-    let fail = Arc::new(AtomicBool::new(false));
 
     for guest in guests.into_iter() {
         if ignored.iter().any(|i| guest.contains(i)) {
             continue;
         }
 
-        let args = cli.zkvm_args.clone();
-        let fail = fail.clone();
-        threads.push(
-            thread::Builder::new()
-                .name(format!(r#"Running "{}""#, guest))
-                .spawn(move || {
-                    let output = Command::new(guest)
-                        .args(args)
-                        .stdout(Stdio::piped())
-                        .output()
-                        .expect("failed to run command");
+        println!("== Executing {} ==", guest);
 
-                    let mut stdout = String::from_utf8(output.stdout).unwrap();
-                    if !output.stderr.is_empty() {
-                        stdout.push('\n');
-                        stdout += &String::from_utf8(output.stderr).unwrap();
-                    }
+        let output = Command::new(guest)
+            .args(cli.zkvm_args.clone())
+            .stdout(Stdio::piped())
+            .output();
 
-                    print!("== Executing {} ==\n{}", guest, stdout);
-                    if !output.status.success() {
-                        fail.store(true, Ordering::Relaxed);
-                    }
-                })
-                .expect("failed to spawn thread"),
-        );
-    }
+        if let Err(msg) = output {
+            println!("Failed to run command {}!", guest);
+            println!("{msg}");
+            if cli.fail_propagation {
+                break;
+            }
+            continue;
+        }
+        let output = output.unwrap();
 
-    while threads.iter().any(|t| !t.is_finished())
-        && (!cli.fail_propagation || !fail.load(Ordering::Relaxed))
-    {
-        thread::sleep(Duration::from_millis(200));
+        if !output.stdout.is_empty() {
+            print!("{}", String::from_utf8(output.stdout).unwrap());
+        }
+        if !output.stderr.is_empty() {
+            print!("{}", String::from_utf8(output.stderr).unwrap());
+        }
+
+        if cli.fail_propagation && !output.status.success() {
+            break;
+        }
     }
 }
