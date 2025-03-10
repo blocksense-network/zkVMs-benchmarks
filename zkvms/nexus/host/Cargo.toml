@@ -4,6 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-nexus-sdk = { path = "/nix/store/ffvl7habndda5p3jvd8xg4r4caa67kl2-Nexus-zkVM-unstable-2025-01-08/sdk" }
+nexus-sdk = { path = "/nix/store/crj1vza7idyckr20y72ai3cv2fkc0ia8-Nexus-zkVM-unstable-2025-03-11/sdk" }
 
 zkvms_host_io = { path = "../../../zkvms_host_io" }
