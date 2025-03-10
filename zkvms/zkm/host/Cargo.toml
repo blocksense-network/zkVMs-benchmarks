@@ -12,5 +12,5 @@ anyhow = "1.0.75"
 zkvms_host_io = { path = "../../../zkvms_host_io" }
 
 [patch."https://github.com/zkMIPS/zkm"]
-zkm-emulator = { path = "/nix/store/xv19lsmz5ards9q6nnyzspcdjlz6law5-zkm-unstable-2025-02-11/emulator" }
-zkm-prover = { path = "/nix/store/xv19lsmz5ards9q6nnyzspcdjlz6law5-zkm-unstable-2025-02-11/prover" }
+zkm-emulator = { path = "/nix/store/71c0b7qyjy9zbaa5gkz5qcxpz46i0h0r-zkm-unstable-2025-03-11/emulator" }
+zkm-prover = { path = "/nix/store/71c0b7qyjy9zbaa5gkz5qcxpz46i0h0r-zkm-unstable-2025-03-11/prover" }
