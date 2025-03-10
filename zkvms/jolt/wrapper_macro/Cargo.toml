@@ -7,6 +7,6 @@ edition = "2021"
 proc-macro = true
 
 [dependencies]
-jolt-sdk-macros = { path = "/nix/store/p3h58kfgv7c7c5gl9m9hzahzn7dn7xja-jolt-unstable-2025-02-12/jolt-sdk/macros" }
+jolt-sdk-macros = { path = "/nix/store/4wb0sl6p9b9f98y218aj79dhmxhwlkcd-jolt-unstable-2025-03-05/jolt-sdk/macros" }
 proc-macro2 = "1.0.93"
 quote = "1.0.38"

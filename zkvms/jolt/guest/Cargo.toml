@@ -9,7 +9,7 @@ name = "guest"
 path = "./src/lib.rs"
 
 [dependencies]
-jolt = { package = "jolt-sdk", path = "/nix/store/p3h58kfgv7c7c5gl9m9hzahzn7dn7xja-jolt-unstable-2025-02-12/jolt-sdk", features = ["guest-std"] }
+jolt = { package = "jolt-sdk", path = "/nix/store/4wb0sl6p9b9f98y218aj79dhmxhwlkcd-jolt-unstable-2025-03-05/jolt-sdk", features = ["guest-std"] }
 
 wrapper_macro = { version = "0.1.0", path = "../wrapper_macro" }
 
