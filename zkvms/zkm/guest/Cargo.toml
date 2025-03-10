@@ -7,7 +7,7 @@ edition = "2021"
 [workspace]
 
 [dependencies]
-zkm-runtime = { path = "/nix/store/xv19lsmz5ards9q6nnyzspcdjlz6law5-zkm-unstable-2025-02-11/runtime/entrypoint" }
+zkm-runtime = { path = "/nix/store/71c0b7qyjy9zbaa5gkz5qcxpz46i0h0r-zkm-unstable-2025-03-11/runtime/entrypoint" }
 
 wrapper_macro = { version = "0.1.0", path = "../wrapper_macro" }
 
