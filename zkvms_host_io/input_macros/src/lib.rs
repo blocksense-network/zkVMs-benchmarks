@@ -226,7 +226,7 @@ pub fn benchmarkable(item: TokenStream) -> TokenStream {
                  if run_info.millis {{ 
                     output += &format!("{{}},", duration.as_millis());
                  }} else {{ 
-                    output += &format!("{{}}.{{}},", duration.as_secs(), duration.subsec_millis());
+                    output += &format!("{{:.3}},", duration.as_secs_f32());
                  }}
                  
                  let durations = starts
@@ -239,7 +239,7 @@ pub fn benchmarkable(item: TokenStream) -> TokenStream {
                  if run_info.millis {{ 
                     output += &format!("{{}},{{}}\n", run_info.repeats, average.as_millis());
                  }} else {{ 
-                    output += &format!("{{}},{{}}.{{}}\n", run_info.repeats, average.as_secs(), average.subsec_millis());
+                    output += &format!("{{}},{{:.3}}\n", run_info.repeats, average.as_secs_f32());
                  }}
 
                  if let Some(file) = run_info.output_file {{
