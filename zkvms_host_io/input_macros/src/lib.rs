@@ -198,10 +198,11 @@ pub fn foreach_private_input_field(item: TokenStream) -> TokenStream {
 pub fn benchmarkable(item: TokenStream) -> TokenStream {
     format!(r#"
         {{
-             use std::time::Instant;
+             use std::time::{{Duration, Instant}};
              use std::fs::OpenOptions;
              use std::io::Write;
-
+             use std::path::Path;
+             
              let mut starts = Vec::new();
              let mut ends = Vec::new();
 
@@ -218,28 +219,54 @@ pub fn benchmarkable(item: TokenStream) -> TokenStream {
              }}
 
              if run_info.benchmarking {{
-                 let mut output = format!("zkvm,{{}}\nguest,{{}}\n", env!("ZKVM"), env!("GUEST"));
+                 let info_row = format!("name,guest,total duration,repeats,average\n");
+                 let mut output = format!("{{}},{{}},", env!("ZKVM"), env!("GUEST"));
 
                  let duration = *ends.last().unwrap() - *starts.first().unwrap();
-                 let duration = if run_info.millis {{ duration.as_millis() }} else {{ duration.as_secs().into() }};
-                 output += &format!("duration,{{duration}}\n");
-
+                 if run_info.millis {{ 
+                    output += &format!("{{}},", duration.as_millis());
+                 }} else {{ 
+                    output += &format!("{{}}.{{}},", duration.as_secs(), duration.subsec_millis());
+                 }}
+                 
                  let durations = starts
                      .into_iter()
                      .zip(ends.into_iter())
-                     .map(|(s,e)| if run_info.millis {{ (e - s).as_millis() }} else {{ (e - s).as_secs().into() }})
-                     .collect::<Vec<u128>>();
-                 let average = durations.iter().sum::<u128>() / durations.len() as u128;
-                 output += &format!("repeats,{{}}\naverage,{{average}}\n", run_info.repeats);
+                     .map(|(s,e)| e - s )
+                     .collect::<Vec<Duration>>();
+                 let average = durations.iter().sum::<Duration>() / durations.len() as u32;
+
+                 if run_info.millis {{ 
+                    output += &format!("{{}},{{}}\n", run_info.repeats, average.as_millis());
+                 }} else {{ 
+                    output += &format!("{{}},{{}}.{{}}\n", run_info.repeats, average.as_secs(), average.subsec_millis());
+                 }}
 
                  if let Some(file) = run_info.output_file {{
-                     let mut outfile = OpenOptions::new()
-                         .write(true)
-                         .create(true)
-                         .append(run_info.append)
-                         .open(file)
-                         .unwrap();
-                     write!(outfile, "{{}}", output);
+
+                    let file_exists = Path::new(&file).exists();
+
+                    let mut outfile = match OpenOptions::new()
+                        .write(true)
+                        .create(true)
+                        .append(run_info.append)
+                        .open(&file)
+                    {{
+                        Ok(file) => file,
+                        Err(e) => {{
+                            panic!("Failed to open file: {{}}", e);
+                        }}
+                    }};
+
+                    if !file_exists {{
+                        if let Err(e) = write!(outfile, "{{}}", info_row) {{
+                            panic!("Failed to write info_row: {{}}", e);
+                        }}
+                    }}
+
+                    if let Err(e) = write!(outfile, "{{}}", output) {{
+                        panic!("Failed to write output: {{}}", e);
+                    }}
                  }}
                  else {{
                      print!("{{}}", output);
