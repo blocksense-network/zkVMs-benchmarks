@@ -1,30 +1,6 @@
 { zkvmLib, lib, just, metacraft-labs, metacraft-labs-old, protobuf
 , pkg-config, openssl, buildGoModule, fetchFromGitHub, craneLib-default, }:
 let
-  zkm_libsnark = buildGoModule rec {
-    pname = "zkm_libsnark";
-    version = "0.1.0";
-
-    src = fetchFromGitHub {
-      owner = "zkMIPS";
-      repo = "zkm-project-template";
-      sparseCheckout = [ "sdk/src/local/libsnark" ];
-      rev = "155221dfa05daf31d7bfe6b601116ef5a03b82c9";
-      hash = "sha256-6hT7cMD3iXN65SFFgMHIPKzzQ212/uhZNIpjJNZ0Dek=";
-    };
-
-    sourceRoot = "${src.name}/sdk/src/local/libsnark";
-
-    vendorHash = "sha256-tGajRfJ8G4M89QSiJnjpTzQ3+VA2RLkavD1ipANeOSI=";
-
-    buildPhase = "sh ./compile.sh";
-
-    installPhase = ''
-      mkdir -p "$out"/lib
-      mv libsnark.so "$out"/lib/
-    '';
-  };
-
   commonArgs = {
     pname = "zkm";
     inherit (metacraft-labs.zkm) version;
@@ -37,14 +13,6 @@ let
       };
 
     nativeBuildInputs = [ pkg-config openssl protobuf metacraft-labs.zkm ];
-
-    overrideVendorGitCheckout = ps: drv:
-      if drv.src.shortRev == "155221d"
-      && builtins.any (p: p.name == "zkm-sdk") ps then
-        drv.overrideAttrs
-        (_: { patches = [ ./0001-chore-Increase-DEGREE_BITS_RANGE.patch ]; })
-      else
-        drv;
   };
 
   craneLib = craneLib-default.overrideToolchain metacraft-labs.zkm;
@@ -60,12 +28,12 @@ in zkvmLib.buildPackage craneLib (commonArgs // {
   '';
 
   preBuild = ''
-    export RUSTFLAGS="-L ${zkm_libsnark}/lib"
+    export RUSTFLAGS="-L ${metacraft-labs.zkm}/lib"
   '';
 
   hostToolchain = metacraft-labs-old.zkm;
 
-  preRunLibraries = [ openssl zkm_libsnark ];
+  preRunLibraries = [ openssl metacraft-labs.zkm ];
 
   preRun = ''
     export ELF_PATH="$out/bin/guest"
