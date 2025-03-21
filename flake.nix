@@ -13,19 +13,19 @@
       "github:metacraft-labs/nix-blockchain-development?rev=f717747a4ce11d5764578d8ee1c505d00bf8a81e";
     nixpkgs.follows = "mcl-blockchain/nixpkgs";
     crane.follows = "mcl-blockchain/crane";
-    rust-overlay.follows = "mcl-blockchain/rust-overlay";
+    fenix.follows = "mcl-blockchain/fenix";
     # flake-utils.follows = "mcl-blockchain/flake-utils";
   };
 
   outputs = { self, nixpkgs, mcl-blockchain, mcl-blockchain-old, crane
-    , rust-overlay, ... }:
+    , fenix, ... }:
     let
       system = "x86_64-linux";
       pkgs = import nixpkgs {
         system = system;
         overlays = [
           mcl-blockchain.overlays.default
-          rust-overlay.overlays.default
+          fenix.overlays.default
           (_: _: {
             metacraft-labs-old =
               mcl-blockchain-old.legacyPackages.${system}.metacraft-labs;

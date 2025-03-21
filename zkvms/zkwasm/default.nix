@@ -1,4 +1,4 @@
-{ zkvmLib, lib, rust-bin, metacraft-labs, wasm-pack, wasm-bindgen-cli, binaryen
+{ zkvmLib, lib, fenix, metacraft-labs, wasm-pack, wasm-bindgen-cli, binaryen
 , craneLib-default, stdenv, }:
 let
   commonArgs = rec {
@@ -13,9 +13,17 @@ let
       };
   };
 
-  rust-toolchain = rust-bin.nightly."2024-04-09".default.override {
-    targets = [ "wasm32-unknown-unknown" ];
-  };
+  rust-toolchain = let
+    toolchain-arg = {
+        channel = "nightly";
+        date = "2024-04-09";
+        sha256 = "sha256-Pf/EIA/M8/JpX7naMcutqBajVwhZoqrPkkyBwho6dyI=";
+      };
+  in with fenix; combine [
+    (toolchainOf toolchain-arg).minimalToolchain
+    (targets.wasm32-unknown-unknown.toolchainOf toolchain-arg).toolchain
+  ];
+
   craneLib = craneLib-default.overrideToolchain rust-toolchain;
   cargoArtifacts = zkvmLib.buildDepsOnly craneLib commonArgs;
 in zkvmLib.buildPackage craneLib (commonArgs // {
