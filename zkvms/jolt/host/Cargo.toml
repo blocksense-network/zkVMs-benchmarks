@@ -21,6 +21,7 @@ ark-serialize = { git = "https://github.com/a16z/arkworks-algebra", branch = "op
 [dependencies]
 jolt-sdk = { path = "/nix/store/zgrhjdmxaijxw6kx6b0k2yxigrrb3f94-jolt-unstable-2025-03-12/jolt-sdk", features = ["host"] }
 jolt-core = { path = "/nix/store/zgrhjdmxaijxw6kx6b0k2yxigrrb3f94-jolt-unstable-2025-03-12/jolt-core" }
+bytemuck_derive = "<1.9.0" # >=1.9.0 supports rust v1.84.0 and up
 
 guest = { path = "../guest" }
 zkvms_host_io = { path = "../../../zkvms_host_io" }
