@@ -1,4 +1,4 @@
-{ zkvmLib, lib, just, metacraft-labs, metacraft-labs-old, rust-bin, protobuf
+{ zkvmLib, lib, just, metacraft-labs, metacraft-labs-old, protobuf
 , pkg-config, openssl, buildGoModule, fetchFromGitHub, craneLib-default, }:
 let
   zkm_libsnark = buildGoModule rec {
