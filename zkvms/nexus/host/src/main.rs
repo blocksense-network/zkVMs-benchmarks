@@ -1,10 +1,9 @@
 use nexus_sdk::{
-    compile::CompileOpts,
-    nova::seq::{Generate, Nova, PP},
-    Local, Prover, Verifiable,
+    stwo::seq::Stwo,
+    Local, Prover, Verifiable, Viewable,
 };
 use zkvms_host_io::{
-    benchmarkable, read_args, Input, Output,
+    benchmarkable, read_args, Input, Return,
     RunType::{Execute, Prove, Verify},
 };
 
@@ -16,53 +15,50 @@ fn main() {
 
     let elf_path = std::env::var("ELF_PATH").expect("ELF PATH is missing");
 
-    println!("Setting up Nova public parameters...");
-    let pp: PP = PP::generate().expect("failed to generate parameters");
-
     match run_info.run_type {
         Execute => unreachable!(),
         Prove => benchmarkable! {
-            // Nova<T> doesn't derive Clone
+            // Stwo<T> doesn't derive Clone
             println!("Loading guest...");
-            let prover: Nova<Local> = Nova::new_from_file(&elf_path).expect("failed to load guest program");
+            let prover: Stwo<Local> = Stwo::new_from_file(&elf_path).expect("failed to load guest program");
 
             println!("Proving execution of vm...");
-            let proof = prover
-                .prove_with_input::<Input>(&pp, &run_info.input)
+            let (view, _) = prover
+                .prove_with_input(&run_info.private_input, &run_info.public_input)
                 .expect("failed to prove program");
 
             println!(
                 " output is {:?}!",
-                proof
-                .output::<Output>()
+                view
+                .public_output::<Return>()
                 .expect("failed to deserialize output")
                 );
 
-            println!(">>>>> Logging\n{}<<<<<", proof.logs().join(""));
+            println!(">>>>> Logging\n{}<<<<<", view.logs().expect("failed to retrieve debug logs").join(""));
         },
         Verify => {
-            // Nova<T> doesn't derive Clone
+            // Stwo<T> doesn't derive Clone
             println!("Loading guest...");
-            let prover: Nova<Local> =
-                Nova::new_from_file(&elf_path).expect("failed to load guest program");
+            let prover: Stwo<Local> = Stwo::new_from_file(&elf_path).expect("failed to load guest program");
 
             println!("Proving execution of vm...");
-            let proof = prover
-                .prove_with_input::<Input>(&pp, &run_info.input)
+            let (view, proof) = prover
+                .prove_with_input(&run_info.private_input, &run_info.public_input)
                 .expect("failed to prove program");
 
             println!(
                 " output is {:?}!",
-                proof
-                    .output::<Output>()
-                    .expect("failed to deserialize output")
-            );
+                view
+                .public_output::<Return>()
+                .expect("failed to deserialize output")
+                );
 
-            println!(">>>>> Logging\n{}<<<<<", proof.logs().join(""));
+            println!(">>>>> Logging\n{}<<<<<", view.logs().expect("failed to retrieve debug logs").join(""));
 
             benchmarkable! {
                 print!("Verifying execution...");
-                proof.verify(&pp).expect("failed to verify proof");
+                proof.verify(&view).expect("failed to verify proof");
+                println!("  Succeeded!");
             }
         }
     }
