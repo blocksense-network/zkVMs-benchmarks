@@ -12,13 +12,9 @@ use zkvms_host_io::{
 };
 
 async fn setup(
-    prover_client: &mut ProverClient,
-    prover_input: &mut ProverInput,
     client_cfg: &mut ClientCfg,
 ) {
-    let generation = prover_client
-        .setup_and_generate_sol_verifier(&client_cfg.zkm_prover, &client_cfg.vk_path, &prover_input)
-        .await;
+    let generation = zkm_recursion::groth16_setup(&client_cfg.vk_path);
 
     if let Err(e) = generation {
         panic!("Failed setup! Error: {e}");
@@ -55,7 +51,7 @@ async fn prove(
     let prover_result = get_proof(prover_client, prover_input).await;
 
     prover_client
-        .process_proof_results(&prover_result, &prover_input, &proof_results_path, "local")
+        .process_proof_results(&prover_result, &prover_input, &proof_results_path)
         .expect("process proof results error");
 }
 
@@ -73,7 +69,11 @@ async fn main() -> Result<()> {
     let proof_results_path = run_info.env_or("PROOF_RESULTS_PATH", "/tmp/contracts");
     let vk_path = run_info.env_or("VERIFYING_KEY_PATH", "/tmp/input");
 
-    let mut client_config = ClientCfg::new("local".to_string(), vk_path.to_owned());
+    let mut client_config = ClientCfg {
+        zkm_prover_type: "local".to_string(),
+        vk_path: vk_path.to_owned(),
+        ..Default::default()
+    };
 
     let mut prover_client = ProverClient::new(&client_config).await;
 
@@ -96,7 +96,7 @@ async fn main() -> Result<()> {
     };
 
     let start = Instant::now();
-    setup(&mut prover_client, &mut prover_input, &mut client_config).await;
+    setup(&mut client_config).await;
 
     match run_info.run_type {
         // only excute the guest program without generating the proof.
