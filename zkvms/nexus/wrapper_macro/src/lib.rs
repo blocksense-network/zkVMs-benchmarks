@@ -45,23 +45,8 @@ pub fn make_wrapper(item: TokenStream) -> TokenStream {
         .parse::<TokenStream>(),
     );
 
-    let public_inputs = toml::from_str::<toml::Table>(include_str!(concat!(
-        env!("INPUTS_DIR"),
-        "/default_public_input.toml"
-    )))
-    .unwrap();
-    let (public_patterns, public_types) =
-        args_divide_public(&args, &public_inputs.keys().collect()).0;
-    let public_patterns: Vec<(TokenStream, TokenStream)> = public_patterns
-        .into_iter()
-        .zip(public_types.into_iter())
-        .collect();
-    for (pattern, ptype) in public_patterns {
-        out.extend(format!("write_output::<{}>(&{});", ptype, pattern).parse::<TokenStream>());
-    }
-
     out.extend(
-        format!("write_output::<{}>(&zkp::{}{});", ret, name, ts_patterns).parse::<TokenStream>(),
+        format!("write_public_output::<{}>(&zkp::{}{});", ret, name, ts_patterns).parse::<TokenStream>(),
     );
 
     let mut block = TokenStream::new();

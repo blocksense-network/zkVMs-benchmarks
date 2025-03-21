@@ -1,14 +1,12 @@
 ENTRY(_start);
 
+/* nb: when proving we will rebuild the memory model based on the first
+       pass' usages, so there is no cost for a "suboptimal" layout here */
+
 SECTIONS
 {
-  /* Set the default size of the stack.                                                 */
-  /*                                                                                    */
-  /* Because the stack will grow down from this point, and if the heap requests memory  */
-  /* being used by the stack then the runtime will panic, this value also functions as  */
-  /* the memory limit for the guest program execution more generally.                   */
-  __memory_top = 0x6400000;
-  . = 0;
+  __memory_top = 0x80400000;
+  . = 0x1000;
 
   .text : ALIGN(4)
   {
@@ -19,7 +17,6 @@ SECTIONS
   }
 
   . = ALIGN(8);
-  . = .* 2;
 
   .data : ALIGN(4)
   {
@@ -44,14 +41,6 @@ SECTIONS
     _end = .;
   }
 
-  /* Dynamic relocations are unsupported. This section is only used to detect
-     relocatable code in the input files and raise an error if relocatable code
-     is found */
-  .got (INFO) :
-  {
-    KEEP(*(.got .got.*));
-  }
-
   /DISCARD/ :
   {
     *(.comment*)
@@ -64,10 +53,3 @@ SECTIONS
 }
 
 ASSERT(. < __memory_top, "Program is too large for the VM memory.");
-
-ASSERT(SIZEOF(.got) == 0, "
-.got section detected in the input files. Dynamic relocations are not
-supported. If you are linking to C code compiled using the `gcc` crate
-then modify your build script to compile the C code _without_ the
--fPIC flag. See the documentation of the `gcc::Config.fpic` method for
-details.");
