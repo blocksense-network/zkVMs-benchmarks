@@ -1,0 +1,9 @@
+[package]
+name = "guest-elf-patch-risc0"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+risc0-binfmt = { path = "/nix/store/6992z4qxba51p1m9vjbjvcwh16gvdp56-risc0-unstable-2025-03-12/risc0/binfmt" }
+risc0-zkos-v1compat = { path = "/nix/store/6992z4qxba51p1m9vjbjvcwh16gvdp56-risc0-unstable-2025-03-12/risc0/zkos/v1compat" }
+bytemuck_derive = "<1.9.0"
