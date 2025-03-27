@@ -23,10 +23,15 @@ in zkvmLib.buildPackage craneLib (commonArgs // {
 
   guestTarget = "riscv32im-risc0-zkvm-elf";
 
+  postBuildGuest = ''
+    cd ../guest_elf_patch
+    cargo run --release
+  '';
+
   preBuild = ''
     # Used for verification
     # https://github.com/risc0/risc0/blob/881e512732eca72849b2d0e263a1242aba3158af/risc0/build/src/lib.rs#L192-L195
-    export GUEST_ID="$(${metacraft-labs.risc0}/bin/r0vm --elf ./host/src/guest --id)"
+    export GUEST_ID="$(${metacraft-labs.risc0}/bin/r0vm --elf ./src/guest --id)"
   '';
 
   preRunBinaries = [ metacraft-labs.risc0 ];

@@ -1,5 +1,5 @@
 { zkvmLib, stdenv, lib, just, metacraft-labs, pkg-config, openssl
-, craneLib-default, }:
+, craneLib-default, libcxx, }:
 let
   commonArgs = {
     pname = "jolt";
@@ -12,7 +12,7 @@ let
           (unions [ ./. ../../guests ../../guests_macro ../../zkvms_host_io ]);
       };
 
-    nativeBuildInputs = [ metacraft-labs.jolt openssl pkg-config ];
+    nativeBuildInputs = [ metacraft-labs.jolt openssl pkg-config libcxx ];
   };
 
   craneLib = craneLib-default.overrideToolchain metacraft-labs.jolt;
@@ -36,6 +36,8 @@ in zkvmLib.buildPackage craneLib (commonArgs // {
   '';
 
   preRunBinaries = [ metacraft-labs.jolt ];
+
+  preRunLibraries = [ openssl ];
 
   preRun = ''
     export ELF_PATH="$out/bin/guest"

@@ -3,8 +3,6 @@ use zkvms_host_io::{
     RunType::{Execute, Prove, Verify},
 };
 
-type Input = (Vec<Vec<bool>>, u32, Vec<Vec<u32>>);
-
 pub fn main() {
     let run_info = read_args();
     if run_info.run_type == Execute {

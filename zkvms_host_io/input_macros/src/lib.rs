@@ -36,6 +36,8 @@ static DERIVES: &str = "#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deseria
 /// ```rust
 /// pub type Output = (... ...);
 ///
+/// pub type Return = ...;
+///
 /// #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 /// pub struct PublicInput {
 ///     pub ...: ...,
@@ -86,6 +88,8 @@ pub fn generate_output_type_input_struct(_: TokenStream) -> TokenStream {
         .collect::<String>();
     let output_type = format!("pub type Output = ({} {});", public_types, ret).to_string();
 
+    let return_type = format!("pub type Return = {};", ret).to_string();
+
     let (public_args, private_args) = args_split_public(&args, &public_inputs.keys().collect());
     let public_attrs = public_args
         .iter()
@@ -125,7 +129,7 @@ pub fn generate_output_type_input_struct(_: TokenStream) -> TokenStream {
     }
     struct_def += ") } }";
 
-    (output_type + &public_input_type + &private_input_type + &struct_def)
+    (output_type + &return_type + &public_input_type + &private_input_type + &struct_def)
         .parse::<TokenStream>()
         .unwrap()
 }
