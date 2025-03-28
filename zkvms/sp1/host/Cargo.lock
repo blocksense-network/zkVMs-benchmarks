@@ -2048,6 +2048,7 @@ dependencies = [
 name = "host-sp1"
 version = "0.1.0"
 dependencies = [
+ "json",
  "sp1-sdk",
  "zkvms_host_io",
 ]
@@ -2481,6 +2482,12 @@ dependencies = [
  "once_cell",
  "wasm-bindgen",
 ]
+
+[[package]]
+name = "json"
+version = "0.12.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "078e285eafdfb6c4b434e0d31e8cfcb5115b651496faca5749b88fafd4f23bfd"
 
 [[package]]
 name = "jubjub"
@@ -6038,6 +6045,7 @@ dependencies = [
  "clap",
  "env-file-reader",
  "input_macros",
+ "json",
  "num-traits",
  "serde",
  "toml",

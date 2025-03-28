@@ -265,6 +265,7 @@ checksum = "fbf6a919d6cf397374f7dfeeea91d974c7c0a7221d0d0f4f20d859d329e53fcc"
 name = "host-zkwasm"
 version = "0.1.0"
 dependencies = [
+ "json",
  "tobytes",
  "zkvms_host_io",
 ]
@@ -311,6 +312,12 @@ checksum = "b0fd2260e829bddf4cb6ea802289de2f86d6a7a690192fbe91b3f46e0f2c8473"
 dependencies = [
  "either",
 ]
+
+[[package]]
+name = "json"
+version = "0.12.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "078e285eafdfb6c4b434e0d31e8cfcb5115b651496faca5749b88fafd4f23bfd"
 
 [[package]]
 name = "lalrpop"
@@ -852,6 +859,7 @@ dependencies = [
  "clap",
  "env-file-reader",
  "input_macros",
+ "json",
  "num-traits",
  "serde",
  "toml",
