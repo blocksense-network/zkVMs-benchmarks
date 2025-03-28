@@ -5,6 +5,7 @@ pub use input_macros::{
 };
 use num_traits::NumCast;
 use serde::{Deserialize, Serialize};
+use json::object;
 use std::{
     collections::*,
     env,
