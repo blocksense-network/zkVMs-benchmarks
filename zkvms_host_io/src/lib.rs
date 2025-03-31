@@ -5,16 +5,17 @@ pub use input_macros::{
 };
 use num_traits::NumCast;
 use serde::{Deserialize, Serialize};
-use json::object;
 use std::{
     collections::*,
     env,
-    fs::{read_to_string, OpenOptions},
-    option::Option,
+    fs::{write, read_to_string, OpenOptions},
     time::{Duration, Instant},
-    io::Write,
+    io::{Read, Write},
     path::Path
 };
+use json::{JsonValue, parse, object};
+use sysinfo::System;
+use chrono::Local;
 
 static DEFAULT_PUBLIC_INPUT: &str =
     include_str!(concat!(env!("INPUTS_DIR"), "/default_public_input.toml"));
@@ -154,58 +155,88 @@ pub fn read_args() -> RunWith {
 }
 
 /// Used by the "benchmarkable" macro. Takes run_info and two vectors of start and
-/// end instants for each benchmark iteration.
+/// end instants for each benchmarkiteration.
 pub fn emit_benchmark_results(run_info: RunWith, starts: Vec<Instant>, ends: Vec<Instant>) {
-    let info_row = format!("name,guest,total duration,repeats,average\n");
-    let mut output = format!("{},{},", env!("ZKVM"), env!("GUEST"));
+    let now = Local::now();
+
+    let mut run = object! {
+        "zkvmName": "",
+        "programName": "",
+        "operation": "",
+        "timeStarted": "",
+        "timeEnded": "",
+        "repeats": 0,
+        "duration": 0,
+        "memory": 0,
+        "input": "",
+        "proofSize": 0
+    };
+
+    run["zkvmName"] = env!("ZKVM").into();
+    run["programName"] = env!("GUEST").into();
+    run["operation"] = match run_info.run_type {
+            RunType::Execute => "execute",
+            RunType::Prove   => "prove",
+            RunType::Verify  => "verify",
+        }.into();
 
     let duration = *ends.last().unwrap() - *starts.first().unwrap();
-    if run_info.millis {
-       output += &format!("{},", duration.as_millis());
-    } else {
-       output += &format!("{:.3},", duration.as_secs_f32());
-    }
+    run["timeStarted"] = (now - duration).to_string().into();
+    run["timeEnded"] = now.to_string().into();
+    run["repeats"] = run_info.repeats.into();
 
     let durations = starts
-        .into_iter()
-        .zip(ends.into_iter())
-        .map(|(s,e)| e - s )
+        .iter()
+        .zip(ends.iter())
+        .map(|(&s, &e)| e - s)
         .collect::<Vec<Duration>>();
     let average = durations.iter().sum::<Duration>() / durations.len() as u32;
+    run["duration"] = average.as_secs_f32().into();
 
-    if run_info.millis {
-       output += &format!("{},{}\n", run_info.repeats, average.as_millis());
-    } else {
-       output += &format!("{},{:.3}\n", run_info.repeats, average.as_secs_f32());
+    let mut data = if run_info.append && run_info.output_file.is_some() && Path::new(run_info.output_file.as_ref().unwrap()).exists() {
+            let mut raw_data = &read_to_string(run_info.output_file.as_ref().unwrap()).ok().unwrap();
+            parse(raw_data).expect("file is not a JSON")
+        }
+        else {
+            object!{
+                benchmarking: {
+                    runs: [],
+                    commit: ""
+                }
+            }
+        };
+
+    if !data.has_key("hardware") {
+        let sys = System::new_all();
+
+        let mut cpu = JsonValue::new_object();
+        cpu["model"] = sys.cpus()[0].brand().into();
+        cpu["cores"] = System::physical_core_count().unwrap_or(sys.cpus().len() / 2).into();
+        cpu["speed"] = (sys.cpus()[0].frequency() as f32 / 1000.0).into(); // in GHz
+
+        let mut memory = JsonValue::new_object();
+        memory["model"] = "".into();
+        memory["size"] = (sys.total_memory() as f32 / 1000000000.0).into(); // in GB
+        memory["speed"] = 0.into();
+
+        let mut accel = JsonValue::new_object();
+        accel["used"] = false.into();
+        accel["model"] = "".into();
+        accel["cores"] = 0.into();
+        accel["speed"] = 0.into();
+
+        data["benchmarking"]["hardware"] = JsonValue::new_object();
+        data["benchmarking"]["hardware"]["cpu"] = cpu;
+        data["benchmarking"]["hardware"]["memory"] = memory;
+        data["benchmarking"]["hardware"]["hardwareAcceleration"] = accel;
     }
 
-    if let Some(file) = run_info.output_file {
+    data["benchmarking"]["runs"].push(run);
 
-       let file_exists = Path::new(&file).exists();
-
-       let mut outfile = match OpenOptions::new()
-           .write(true)
-           .create(true)
-           .append(run_info.append)
-           .open(&file)
-       {
-           Ok(file) => file,
-           Err(e) => {
-               panic!("Failed to open file: {}", e);
-           }
-       };
-
-       if !file_exists {
-           if let Err(e) = write!(outfile, "{}", info_row) {
-               panic!("Failed to write info_row: {}", e);
-           }
-       }
-
-       if let Err(e) = write!(outfile, "{}", output) {
-           panic!("Failed to write output: {}", e);
-       }
+    if let Some(path) = run_info.output_file {
+        write(path, data.dump()).ok().expect("Couldn't output to file");
     }
     else {
-        print!("{}", output);
+        println!("{:#?}", data.dump());
     }
 }
