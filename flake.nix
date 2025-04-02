@@ -17,8 +17,8 @@
     # flake-utils.follows = "mcl-blockchain/flake-utils";
   };
 
-  outputs = { self, nixpkgs, mcl-blockchain, mcl-blockchain-old, crane
-    , fenix, ... }:
+  outputs =
+    { self, nixpkgs, mcl-blockchain, mcl-blockchain-old, crane, fenix, ... }:
     let
       system = "x86_64-linux";
       pkgs = import nixpkgs {

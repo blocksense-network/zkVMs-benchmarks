@@ -46,7 +46,11 @@ pub fn make_wrapper(item: TokenStream) -> TokenStream {
     );
 
     out.extend(
-        format!("write_public_output::<{}>(&zkp::{}{});", ret, name, ts_patterns).parse::<TokenStream>(),
+        format!(
+            "write_public_output::<{}>(&zkp::{}{});",
+            ret, name, ts_patterns
+        )
+        .parse::<TokenStream>(),
     );
 
     let mut block = TokenStream::new();

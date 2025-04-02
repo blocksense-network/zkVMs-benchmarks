@@ -1,5 +1,5 @@
-{ zkvmLib, lib, just, metacraft-labs, metacraft-labs-old, protobuf
-, pkg-config, openssl, buildGoModule, fetchFromGitHub, craneLib-default, }:
+{ zkvmLib, lib, just, metacraft-labs, metacraft-labs-old, protobuf, pkg-config
+, openssl, buildGoModule, fetchFromGitHub, craneLib-default, }:
 let
   commonArgs = {
     pname = "zkm";
