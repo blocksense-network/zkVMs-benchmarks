@@ -38,6 +38,9 @@ in zkvmLib.buildPackage craneLib (commonArgs // {
   preRun = ''
     export ELF_PATH="$out/bin/guest"
     export PKG_CONFIG_PATH='${openssl.dev}/lib/pkgconfig' # Dirty hack
+
+    echo "Generating witness. THIS COULD RETURN A SIGSEGV ERROR, IGNORE IT"
+    SNARK_SETUP=true "$out"/bin/host-${commonArgs.pname} prove 2>/dev/null || true
   '';
 
   doCheck = false;
