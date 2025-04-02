@@ -15,11 +15,12 @@ let
 
   rust-toolchain = let
     toolchain-arg = {
-        channel = "nightly";
-        date = "2024-04-09";
-        sha256 = "sha256-Pf/EIA/M8/JpX7naMcutqBajVwhZoqrPkkyBwho6dyI=";
-      };
-  in with fenix; combine [
+      channel = "nightly";
+      date = "2024-04-09";
+      sha256 = "sha256-Pf/EIA/M8/JpX7naMcutqBajVwhZoqrPkkyBwho6dyI=";
+    };
+  in with fenix;
+  combine [
     (toolchainOf toolchain-arg).minimalToolchain
     (targets.wasm32-unknown-unknown.toolchainOf toolchain-arg).toolchain
   ];
