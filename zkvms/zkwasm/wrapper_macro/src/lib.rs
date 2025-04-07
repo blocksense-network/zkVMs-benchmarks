@@ -2,7 +2,7 @@ use proc_macro::{Ident, TokenStream, TokenTree};
 
 #[path = "../../../../guests_macro/src/parse_fn.rs"]
 mod parse_fn;
-use crate::parse_fn::{args_divide_grouped, args_divide_public, group_streams, split_fn};
+use crate::parse_fn::FunctionDefinition;
 use toml::Table;
 
 /// Extends an out TokenStream with `let` directives for all patterns (and
@@ -57,33 +57,23 @@ fn insert_reads(
 /// ```
 #[proc_macro]
 pub fn make_wrapper(item: TokenStream) -> TokenStream {
-    let (name, args, ret) = split_fn(&item);
-
-    let public_inputs = toml::from_str::<Table>(include_str!(concat!(
-        env!("INPUTS_DIR"),
-        "/default_public_input.toml"
-    )))
-    .unwrap();
-    let ((pub_pat, pub_typ), (prv_pat, prv_typ)) =
-        args_divide_public(&args, &public_inputs.keys().collect());
+    let fd = FunctionDefinition::new(&item);
 
     let mut out = TokenStream::new();
 
-    insert_reads(&mut out, &pub_pat, &pub_typ, "read_public");
-    insert_reads(&mut out, &prv_pat, &prv_typ, "read_private");
-
-    let (ts_patterns, _) = args_divide_grouped(&args);
+    insert_reads(&mut out, fd.public_patterns(), fd.public_types(), "read_public");
+    insert_reads(&mut out, fd.private_patterns(), fd.private_types(), "read_private");
 
     out.extend(
         format!(
             "
-        let result = zkp::{}{};
+        let result = zkp::{}({});
         let bytes = tobytes::to_bytes!(result);
         for val in bytes.into_iter() {{
             write(val);
         }}
     ",
-            name, ts_patterns
+            fd.name, fd.grouped_patterns()
         )
         .parse::<TokenStream>(),
     );
