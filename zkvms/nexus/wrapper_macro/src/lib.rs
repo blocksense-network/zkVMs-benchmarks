@@ -2,7 +2,7 @@ use proc_macro::TokenStream;
 
 #[path = "../../../../guests_macro/src/parse_fn.rs"]
 mod parse_fn;
-use crate::parse_fn::{args_divide_grouped, args_divide_public, args_split, split_fn};
+use crate::parse_fn::FunctionDefinition;
 
 /// Creates a body, which reads all inputs, stores them in variables, then
 /// writes the ones, defined as public in `default_public_input.toml` to the
@@ -32,23 +32,16 @@ use crate::parse_fn::{args_divide_grouped, args_divide_public, args_split, split
 /// ```
 #[proc_macro]
 pub fn make_wrapper(item: TokenStream) -> TokenStream {
-    let (name, args, ret) = split_fn(&item);
-
-    let (ts_patterns, ts_types) = args_divide_grouped(&args);
+    let fd = FunctionDefinition::new(&item);
 
     let mut out = TokenStream::new();
-    out.extend(
-        format!(
-            "let {} = read_private_input::<{}>().unwrap();",
-            ts_patterns, ts_types
-        )
-        .parse::<TokenStream>(),
-    );
+    out.extend(format!("let {} = read_public_input::<{}>().unwrap();", fd.grouped_public_patterns(), fd.grouped_public_types()).parse::<TokenStream>());
+    out.extend(format!("let {} = read_private_input::<{}>().unwrap();", fd.grouped_private_patterns(), fd.grouped_private_types()).parse::<TokenStream>());
 
     out.extend(
         format!(
-            "write_public_output::<{}>(&zkp::{}{});",
-            ret, name, ts_patterns
+            "write_public_output::<{}>(&zkp::{}({}));",
+            fd.return_type, fd.name, fd.grouped_patterns()
         )
         .parse::<TokenStream>(),
     );
