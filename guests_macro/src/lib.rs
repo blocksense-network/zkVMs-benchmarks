@@ -37,23 +37,23 @@ mod parse_fn;
 /// ```
 #[proc_macro_attribute]
 pub fn proving_entrypoint(_: TokenStream, mut item: TokenStream) -> TokenStream {
-    let (name, args, ret) = parse_fn::split_fn(&item);
+    let fd = parse_fn::FunctionDefinition::new(&item);
+    let fn_type = format!("fn {}{} -> {}", fd.name, fd.args, fd.return_type).replace('\n', " ");
 
     // We also need to pass some type information to the host program compile-time.
     // Put it in the file guests/type.txt.
     let mut output = File::create("../type.txt").unwrap();
-    writeln!(output, "{}", &format!("{args}").replace('\n', " "));
-    write!(output, "{}", &format!("{ret}").replace('\n', " "));
+    write!(output, "{fn_type}");
 
     item.extend(
         format!(
             "#[macro_export]
         macro_rules! entrypoint_expr {{
             () => {{
-                make_wrapper!{{{}{} -> {}}}
+                make_wrapper!{{ {} }}
             }};
         }}",
-            name, args, ret
+            fn_type
         )
         .parse::<TokenStream>(),
     );
