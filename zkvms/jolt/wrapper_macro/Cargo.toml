@@ -10,3 +10,4 @@ proc-macro = true
 jolt-sdk-macros = { path = "/nix/store/zgrhjdmxaijxw6kx6b0k2yxigrrb3f94-jolt-unstable-2025-03-12/jolt-sdk/macros" }
 proc-macro2 = "1.0.93"
 quote = "1.0.38"
+toml = "0.8.20"
