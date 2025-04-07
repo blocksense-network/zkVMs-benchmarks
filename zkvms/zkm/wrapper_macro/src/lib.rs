@@ -33,8 +33,8 @@ pub fn make_wrapper(item: TokenStream) -> TokenStream {
 
     let mut out = TokenStream::new();
     // NOTE: The first read returns public data, the second returns private
-    out.extend(format!("let {} : {} = read();", fd.grouped_public_patterns(), fd.grouped_public_types()).parse::<TokenStream>());
-    out.extend(format!("let {} : {} = read();", fd.grouped_private_patterns(), fd.grouped_private_types()).parse::<TokenStream>());
+    out.extend(format!("let ({}) : ({}) = read();", fd.grouped_public_patterns(), fd.grouped_public_types()).parse::<TokenStream>());
+    out.extend(format!("let ({}) : ({}) = read();", fd.grouped_private_patterns(), fd.grouped_private_types()).parse::<TokenStream>());
 
     out.extend(format!("commit::<{}>(&zkp::{}({}));", fd.return_type, fd.name, fd.grouped_patterns()).parse::<TokenStream>());
 
