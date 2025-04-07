@@ -1,6 +1,6 @@
 #![cfg_attr(target_arch = "riscv32", no_std, no_main, allow(unused_imports))]
 
-use nexus_rt::{postcard, println, read_private_input, write_public_output};
+use nexus_rt::{postcard, println, read_private_input, read_public_input, write_public_output};
 
 extern crate alloc;
 use alloc::{collections::*, vec::*};
