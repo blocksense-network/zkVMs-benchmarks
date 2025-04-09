@@ -1,0 +1,17 @@
+[package]
+name = "sha2"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+guests_macro = { version = "0.1.0", path = "../../guests_macro" }
+sha2 = { version = "0.10.8", default-features = false }
+
+[features]
+no_std = []
+jolt = []
+nexus = []
+risc0 = []
+sp1 = []
+zkm = []
+zkwasm = []
