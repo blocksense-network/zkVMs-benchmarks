@@ -36,10 +36,15 @@ impl FunctionDefinition {
             Self::args_divide_public(&patterns, &types, &public_inputs.keys().collect());
 
         FunctionDefinition {
-            name, args, return_type,
-            patterns, types,
-            public_patterns, public_types,
-            private_patterns, private_types,
+            name,
+            args,
+            return_type,
+            patterns,
+            types,
+            public_patterns,
+            public_types,
+            private_patterns,
+            private_types,
         }
     }
 

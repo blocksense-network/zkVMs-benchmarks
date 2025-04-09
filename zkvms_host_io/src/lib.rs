@@ -1,21 +1,21 @@
+use chrono::Local;
 use clap::{Parser, ValueEnum};
 use env_file_reader::read_str;
 pub use input_macros::{
     benchmarkable, foreach_input_field, foreach_private_input_field, foreach_public_input_field,
 };
+use json::{object, parse, JsonValue};
 use num_traits::NumCast;
 use serde::{Deserialize, Serialize};
 use std::{
     collections::*,
     env,
-    fs::{write, read_to_string, OpenOptions},
-    time::{Duration, Instant},
+    fs::{read_to_string, write, OpenOptions},
     io::{Read, Write},
-    path::Path
+    path::Path,
+    time::{Duration, Instant},
 };
-use json::{JsonValue, parse, object};
 use sysinfo::System;
-use chrono::Local;
 
 static DEFAULT_PUBLIC_INPUT: &str =
     include_str!(concat!(env!("INPUTS_DIR"), "/default_public_input.toml"));
@@ -175,10 +175,11 @@ pub fn emit_benchmark_results(run_info: RunWith, starts: Vec<Instant>, ends: Vec
     run["zkvmName"] = env!("ZKVM").into();
     run["programName"] = env!("GUEST").into();
     run["operation"] = match run_info.run_type {
-            RunType::Execute => "execute",
-            RunType::Prove   => "prove",
-            RunType::Verify  => "verify",
-        }.into();
+        RunType::Execute => "execute",
+        RunType::Prove => "prove",
+        RunType::Verify => "verify",
+    }
+    .into();
 
     let duration = *ends.last().unwrap() - *starts.first().unwrap();
     run["timeStarted"] = (now - duration).to_string().into();
@@ -193,25 +194,31 @@ pub fn emit_benchmark_results(run_info: RunWith, starts: Vec<Instant>, ends: Vec
     let average = durations.iter().sum::<Duration>() / durations.len() as u32;
     run["duration"] = average.as_secs_f32().into();
 
-    let mut data = if run_info.append && run_info.output_file.is_some() && Path::new(run_info.output_file.as_ref().unwrap()).exists() {
-            let mut raw_data = &read_to_string(run_info.output_file.as_ref().unwrap()).ok().unwrap();
-            parse(raw_data).expect("file is not a JSON")
-        }
-        else {
-            object!{
-                benchmarking: {
-                    runs: [],
-                    commit: ""
-                }
+    let mut data = if run_info.append
+        && run_info.output_file.is_some()
+        && Path::new(run_info.output_file.as_ref().unwrap()).exists()
+    {
+        let mut raw_data = &read_to_string(run_info.output_file.as_ref().unwrap())
+            .ok()
+            .unwrap();
+        parse(raw_data).expect("file is not a JSON")
+    } else {
+        object! {
+            benchmarking: {
+                runs: [],
+                commit: ""
             }
-        };
+        }
+    };
 
     if !data.has_key("hardware") {
         let sys = System::new_all();
 
         let mut cpu = JsonValue::new_object();
         cpu["model"] = sys.cpus()[0].brand().into();
-        cpu["cores"] = System::physical_core_count().unwrap_or(sys.cpus().len() / 2).into();
+        cpu["cores"] = System::physical_core_count()
+            .unwrap_or(sys.cpus().len() / 2)
+            .into();
         cpu["speed"] = (sys.cpus()[0].frequency() as f32 / 1000.0).into(); // in GHz
 
         let mut memory = JsonValue::new_object();
@@ -234,9 +241,10 @@ pub fn emit_benchmark_results(run_info: RunWith, starts: Vec<Instant>, ends: Vec
     data["benchmarking"]["runs"].push(run);
 
     if let Some(path) = run_info.output_file {
-        write(path, data.dump()).ok().expect("Couldn't output to file");
-    }
-    else {
-        println!("{:#?}", data.dump());
+        write(path, data.dump())
+            .ok()
+            .expect("Couldn't output to file");
+    } else {
+        println!("{}", data.dump());
     }
 }
