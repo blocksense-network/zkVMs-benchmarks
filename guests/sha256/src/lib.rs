@@ -5,6 +5,13 @@ extern crate alloc;
 #[cfg(feature = "no_std")]
 use alloc::vec::Vec;
 
+#[cfg(feature = "sp1")]
+use sha2_sp1::{Digest, Sha256};
+
+#[cfg(feature = "risc0")]
+use sha2_risc0::{Digest, Sha256};
+
+#[cfg(not(any(feature = "sp1", feature = "risc0")))]
 use sha2::{Digest, Sha256};
 
 #[guests_macro::proving_entrypoint]
