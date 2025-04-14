@@ -167,7 +167,7 @@ in {
           pushd zkvms/${args.pname}/guest
 
           cp '${cargoLocks.cargoLockDrv}/Cargo.lock' Cargo.lock
-          cargo add --path "../../../guests/${guest}" --rename zkp --offline
+          cargo add --path "../../../guests/${guest}" --rename zkp --offline --features '${args.pname}'
           echo '${appended}' >> Cargo.toml
 
           popd
