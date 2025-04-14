@@ -149,14 +149,14 @@ Arguments:
 
 Options:
   -i, --ignore <IGNORE>...  Ignored zkVMs. Values are substrings of names
-  -f, --fail-propagation    Make one failiure stop the entire process
+  -f, --fail-propagation    Make one failure stop the entire process
   -h, --help                Print help
 ```
 
 ### Example: benchmark a single program
 
 As already mentioned, if you omit a zkVM when issuing `nix run`, all zkVMs will be ran for the given program.
-However, when benchmarking, to get a useable output, you need to use `--metrics-output` with `--append`:
+However, when benchmarking, to get a usable output, you need to use `--metrics-output` with `--append`:
 
 ```sh
 nix run github:blocksense-network/zkVMs-benchmarks#fibonacci -- prove --benchmark --metrics-output result.csv --append
