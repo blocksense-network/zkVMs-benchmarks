@@ -74,8 +74,11 @@
         }) { } guests;
     in {
       packages.${system} = hostPackages // guestPackages // {
-        rust-format-all = callPackage ./rust-format-all.nix { };
-        update-nix-dependencies = callPackage ./update-nix-dependencies.nix { };
+        rust-format-all = callPackage ./rust-format-all.nix {
+        };
+        update-nix-dependencies = callPackage ./update-nix-dependencies.nix {
+          zkvms = builtins.map (name: mcl-blockchain.packages.${system}.${name}) zkvms;
+        };
       };
 
       formatter.${system} = pkgs.nixfmt;
