@@ -116,7 +116,9 @@ name = "keccak"
 version = "0.1.0"
 dependencies = [
  "guests_macro",
- "sha3",
+ "sha3 0.10.6",
+ "sha3 0.10.8 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sha3 0.10.8 (git+https://github.com/sp1-patches/RustCrypto-hashes?tag=patch-sha3-0.10.8-sp1-4.0.0)",
  "zkm-runtime",
 ]
 
@@ -252,9 +254,27 @@ dependencies = [
 
 [[package]]
 name = "sha3"
+version = "0.10.6"
+source = "git+https://github.com/risc0/RustCrypto-hashes?tag=sha3-v0.10.6#7a187e934c1f6c68e4b4e5cf37541b7a0d64d303"
+dependencies = [
+ "digest",
+ "keccak 0.1.5",
+]
+
+[[package]]
+name = "sha3"
 version = "0.10.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "75872d278a8f37ef87fa0ddbda7802605cb18344497949862c0d4dcb291eba60"
+dependencies = [
+ "digest",
+ "keccak 0.1.5",
+]
+
+[[package]]
+name = "sha3"
+version = "0.10.8"
+source = "git+https://github.com/sp1-patches/RustCrypto-hashes?tag=patch-sha3-0.10.8-sp1-4.0.0#8f6d303c0861ba7e5adcc36207c0f41fe5edaabc"
 dependencies = [
  "digest",
  "keccak 0.1.5",
@@ -361,6 +381,7 @@ dependencies = [
 [[package]]
 name = "zkm-precompiles"
 version = "0.2.0"
+source = "git+https://github.com/zkMIPS/zkm.git#eb09cf6c81bed9717bc98e4a4c9a61f54787a351"
 dependencies = [
  "bincode",
  "cfg-if",
@@ -371,6 +392,7 @@ dependencies = [
 [[package]]
 name = "zkm-runtime"
 version = "0.2.0"
+source = "git+https://github.com/zkMIPS/zkm.git#eb09cf6c81bed9717bc98e4a4c9a61f54787a351"
 dependencies = [
  "bincode",
  "bytemuck",

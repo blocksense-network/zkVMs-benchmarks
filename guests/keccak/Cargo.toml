@@ -8,11 +8,14 @@ guests_macro = { version = "0.1.0", path = "../../guests_macro" }
 sha3 = { version = "0.10.8", default-features = false }
 
 zkm-runtime = { git = "https://github.com/zkMIPS/zkm.git", optional = true } # patched by the guest wrapper
+sha3-sp1 = { git = "https://github.com/sp1-patches/RustCrypto-hashes", package = "sha3", tag = "patch-sha3-0.10.8-sp1-4.0.0", optional = true }
+sha3-risc0 = { git = "https://github.com/risc0/RustCrypto-hashes", package = "sha3", tag = "sha3-v0.10.6", optional = true }
+
 [features]
 no_std = []
 jolt = []
 nexus = []
-risc0 = []
-sp1 = []
+risc0 = ["sha3-risc0"]
+sp1 = ["sha3-sp1"]
 zkm = ["zkm-runtime"]
 zkwasm = []
