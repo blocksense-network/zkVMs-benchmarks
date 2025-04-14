@@ -1,35 +1,41 @@
-{ writeShellApplication, cargo, }:
+{ writeShellApplication, cargo, zkvms, }:
 writeShellApplication {
   name = "update_nix_dependencies";
 
   runtimeInputs = [ cargo ];
 
-  text = ''
-    updateCrate() {
+  text = let
+    namesAndPaths = builtins.concatStringsSep
+      " "
+      (builtins.map
+        (zkvm: zkvm.pname + "," + zkvm.outPath)
+        zkvms);
+  in ''
+    updatePath() {
         sed -i "s|/nix/store/[^-]\+-$1-[^/]\+|$2|" Cargo.toml
+    }
+    updateDep() {
+        updatePath "$1" "$2"
+        cargo generate-lockfile
     }
 
     cd zkvms
-    for zkvm in *
+    for i in ${namesAndPaths}
     do
-        [ ! -d "$zkvm" ] || [ "$zkvm" == 'result' ] && continue
-        [ "$zkvm" == 'zkwasm' ] && continue
+        IFS=',' read -r zkvm path <<< "''${i}"
+        [ "$zkvm" == 'zkWasm' ] && continue
+        [ "$zkvm" == 'Nexus-zkVM' ] && zkvm=nexus
+
         pushd "$zkvm"
-        newPath="$(nix build github:metacraft-labs/nix-blockchain-development#"$zkvm" --print-out-paths)"
 
         [ "$zkvm" == 'nexus' ] && zkvm=Nexus
 
-        cd guest
-        updateCrate "$zkvm" "$newPath"
-        cd ../host
-        updateCrate "$zkvm" "$newPath"
-        cd ../wrapper_macro
-        updateCrate "$zkvm" "$newPath"
-
+        cd wrapper_macro
+        updatePath "$zkvm" "$path"
         cd ../guest
-        cargo generate-lockfile
+        updateDep "$zkvm" "$path"
         cd ../host
-        cargo generate-lockfile
+        updateDep "$zkvm" "$path"
 
         popd
     done
