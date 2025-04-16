@@ -66,7 +66,7 @@ static DERIVES: &str = "#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deseria
 pub fn generate_output_type_input_struct(_: TokenStream) -> TokenStream {
     let fd = new_fd();
 
-    let sep = if fd.types().is_empty() { "" } else { ", " };
+    let sep = if fd.public_types().is_empty() { "" } else { ", " };
     let output_type = format!("pub type Output = ({} {} {});", fd.grouped_public_types(), sep, fd.return_type).to_string();
 
     let return_type = format!("pub type Return = {};", fd.return_type).to_string();
