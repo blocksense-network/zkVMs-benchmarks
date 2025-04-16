@@ -28,7 +28,7 @@ macro_rules! build_input {
             }
             let bytes = all
                 .into_iter()
-                .map(|x| x.to_be_bytes())
+                .map(|x: u64| x.to_be_bytes())
                 .flatten()
                 .collect::<Vec<u8>>();
             std::fs::write($path, bytes);
