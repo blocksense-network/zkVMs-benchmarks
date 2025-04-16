@@ -78,6 +78,7 @@ let
 
         tail -n +4 ./guest/Cargo.lock >> lockfile
         tail -n +4 ../../guests/${guest}/Cargo.lock >> lockfile
+        echo >> lockfile
 
         awk '${removeDuplicates}' lockfile > "$out/Cargo.lock"
       '';
