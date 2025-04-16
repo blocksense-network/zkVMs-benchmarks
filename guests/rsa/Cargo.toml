@@ -1,0 +1,24 @@
+[package]
+name = "rsa"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+guests_macro = { version = "0.1.0", path = "../../guests_macro" }
+rsa = "0.9.6"
+sha2 = { version = "0.10.8", package = "sha2", features = ["oid"] }
+
+base64ct = "=1.6.0"
+js-sys = "=0.3.72"
+getrandom = { version = "0.2", features = ["js"] }
+
+rsa-sp1 = { git = "https://github.com/sp1-patches/RustCrypto-RSA", package = "rsa", tag = "patch-0.9.6-sp1-4.0.0-v2", optional = true }
+
+[features]
+no_std = []
+jolt = []
+nexus = []
+risc0 = []
+sp1 = ["rsa-sp1"]
+zkm = []
+zkwasm = []
