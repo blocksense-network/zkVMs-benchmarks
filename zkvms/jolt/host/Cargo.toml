@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [lib]
-path = "/nix/store/zgrhjdmxaijxw6kx6b0k2yxigrrb3f94-jolt-unstable-2025-03-12/src/lib.rs"
+path = "/nix/store/nz0lr1zlwigzz4hljk4pkxgbh5h3sfws-jolt-unstable-2025-03-12/src/lib.rs"
 
 [profile.release]
 debug = 1
@@ -19,8 +19,8 @@ ark-ec = { git = "https://github.com/a16z/arkworks-algebra", branch = "optimize/
 ark-serialize = { git = "https://github.com/a16z/arkworks-algebra", branch = "optimize/field-from-u64" }
 
 [dependencies]
-jolt-sdk = { path = "/nix/store/zgrhjdmxaijxw6kx6b0k2yxigrrb3f94-jolt-unstable-2025-03-12/jolt-sdk", features = ["host"] }
-jolt-core = { path = "/nix/store/zgrhjdmxaijxw6kx6b0k2yxigrrb3f94-jolt-unstable-2025-03-12/jolt-core" }
+jolt-sdk = { path = "/nix/store/nz0lr1zlwigzz4hljk4pkxgbh5h3sfws-jolt-unstable-2025-03-12/jolt-sdk", features = ["host"] }
+jolt-core = { path = "/nix/store/nz0lr1zlwigzz4hljk4pkxgbh5h3sfws-jolt-unstable-2025-03-12/jolt-core" }
 bytemuck_derive = "<1.9.0" # >=1.9.0 supports rust v1.84.0 and up
 
 guest = { path = "../guest" }

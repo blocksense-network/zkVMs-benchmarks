@@ -7,7 +7,7 @@ edition = "2021"
 [workspace]
 
 [dependencies]
-risc0-zkvm = { path = "/nix/store/6992z4qxba51p1m9vjbjvcwh16gvdp56-risc0-unstable-2025-03-12/risc0/zkvm", default-features = false, features = ['std'] }
+risc0-zkvm = { path = "/nix/store/jvl62igv3z8yvayhk1c02hw51adjc0d0-risc0-unstable-2025-03-12/risc0/zkvm", default-features = false, features = ['std'] }
 
 wrapper_macro = { version = "0.1.0", path = "../wrapper_macro" }
 
