@@ -5,7 +5,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-nexus-rt = { path = "/nix/store/63pzywhap3cxlqf74wjdwxxc66w7f29w-Nexus-zkVM-unstable-2025-03-11/runtime" }
+nexus-rt = { path = "/nix/store/fbhw5gcxvvhnz6s0ns1sx4l8n0v8ngi7-Nexus-zkVM-unstable-2025-03-11/runtime" }
 postcard = { version = "1.0.10", default-features = false, features = ["alloc"] }
 
 wrapper_macro = { version = "0.1.0", path = "../wrapper_macro" }

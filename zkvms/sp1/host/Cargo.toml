@@ -4,6 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-sp1-sdk = { path = "/nix/store/viprfh4bxhjhz6im9r6a31s0ms6z6sjs-sp1-unstable-2025-03-10/crates/sdk" }
+sp1-sdk = { path = "/nix/store/4837dcscbprhym5gmg97s6ar0f76i550-sp1-unstable-2025-03-10/crates/sdk" }
 
 zkvms_host_io = { path = "../../../zkvms_host_io" }
