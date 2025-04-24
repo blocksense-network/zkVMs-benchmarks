@@ -10,7 +10,10 @@ use sha2::{Digest, Sha256};
 #[cfg(feature = "sp1")]
 use rsa_sp1::{pkcs8::DecodePublicKey, Pkcs1v15Sign, RsaPublicKey};
 
-#[cfg(not(feature = "sp1"))]
+#[cfg(feature = "risc0")]
+use rsa_risc0::{pkcs8::DecodePublicKey, Pkcs1v15Sign, RsaPublicKey};
+
+#[cfg(not(any(feature = "sp1", feature = "risc0")))]
 use rsa::{pkcs8::DecodePublicKey, Pkcs1v15Sign, RsaPublicKey};
 
 #[guests_macro::proving_entrypoint]
