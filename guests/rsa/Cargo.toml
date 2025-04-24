@@ -13,12 +13,13 @@ js-sys = "=0.3.72"
 getrandom = { version = "0.2", features = ["js"] }
 
 rsa-sp1 = { git = "https://github.com/sp1-patches/RustCrypto-RSA", package = "rsa", tag = "patch-0.9.6-sp1-4.0.0-v2", optional = true }
+rsa-risc0 = { git = "https://github.com/risc0/RustCrypto-RSA", package = "rsa", tag = "v0.9.7-risczero.0", optional = true }
 
 [features]
 no_std = []
 jolt = []
 nexus = []
-risc0 = []
+risc0 = ["rsa-risc0"]
 sp1 = ["rsa-sp1"]
 zkm = []
 zkwasm = []
