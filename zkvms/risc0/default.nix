@@ -23,6 +23,12 @@ in zkvmLib.buildPackage craneLib (commonArgs // {
 
   guestTarget = "riscv32im-risc0-zkvm-elf";
 
+  preBuildGuest = ''
+    # Should be set only when RISC0 is compiled with unstable feature
+    # https://github.com/risc0/risc0/blob/b5bf2d4a50cfb954da7f507766ba0f120c716958/risc0/build/src/lib.rs#L430-L435
+    export RISC0_FEATURE_bigint2=""
+  '';
+
   postBuildGuest = ''
     cd ../guest_elf_patch
     cargo run --release
