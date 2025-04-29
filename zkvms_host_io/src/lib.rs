@@ -201,6 +201,7 @@ pub fn emit_benchmark_results(run_info: RunWith, starts: Vec<Instant>, ends: Vec
             .write(true)
             .create(true)
             .append(run_info.append)
+            .truncate(!run_info.append)
             .open(&path)
         {
             Ok(file) => file,
