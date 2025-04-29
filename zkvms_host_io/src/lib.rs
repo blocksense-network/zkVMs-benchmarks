@@ -1,19 +1,19 @@
+use chrono::Local;
 use clap::{Parser, ValueEnum};
 use env_file_reader::read_str;
 pub use input_macros::{
     benchmarkable, foreach_input_field, foreach_private_input_field, foreach_public_input_field,
 };
+use json::{object, parse, JsonValue, Null};
 use num_traits::NumCast;
 use serde::{Deserialize, Serialize};
-use json::object;
 use std::{
     collections::*,
     env,
-    fs::{read_to_string, OpenOptions},
-    option::Option,
+    fs::{read_to_string, write, OpenOptions},
+    io::{Read, Write},
+    path::Path,
     time::{Duration, Instant},
-    io::Write,
-    path::Path
 };
 
 static DEFAULT_PUBLIC_INPUT: &str =
@@ -153,59 +153,66 @@ pub fn read_args() -> RunWith {
     }
 }
 
+fn mean(xs: &Vec<f32>) -> f32 {
+    if xs.len() == 1 {
+        xs[0]
+    }
+    else {
+        statistical::mean(&xs)
+    }
+}
+
+fn stddev(xs: &Vec<f32>) -> f32 {
+    if xs.len() == 1 {
+        0.0
+    }
+    else {
+        statistical::standard_deviation(&xs, None)
+    }
+}
+
 /// Used by the "benchmarkable" macro. Takes run_info and two vectors of start and
 /// end instants for each benchmark iteration.
 pub fn emit_benchmark_results(run_info: RunWith, starts: Vec<Instant>, ends: Vec<Instant>) {
-    let info_row = format!("name,guest,total duration,repeats,average\n");
-    let mut output = format!("{},{},", env!("ZKVM"), env!("GUEST"));
-
+    let now = Local::now();
+    let mut run = JsonValue::new_object();
     let duration = *ends.last().unwrap() - *starts.first().unwrap();
-    if run_info.millis {
-       output += &format!("{},", duration.as_millis());
-    } else {
-       output += &format!("{:.3},", duration.as_secs_f32());
-    }
+
+    run["timeStarted"] = (now - duration).to_string().into();
+    run["repeats"] = run_info.repeats.into();
+    run["totalDuration"] = duration.as_secs_f32().into();
 
     let durations = starts
-        .into_iter()
-        .zip(ends.into_iter())
-        .map(|(s,e)| e - s )
-        .collect::<Vec<Duration>>();
-    let average = durations.iter().sum::<Duration>() / durations.len() as u32;
+        .iter()
+        .zip(ends.iter())
+        .map(|(&s, &e)| (e - s).as_secs_f32())
+        .collect::<Vec<f32>>();
 
-    if run_info.millis {
-       output += &format!("{},{}\n", run_info.repeats, average.as_millis());
+    run["mean"] = mean(&durations).into();
+    run["deviation"] = stddev(&durations).into();
+    run["min"] = (*durations.iter().min_by(|a,b| a.partial_cmp(b).unwrap()).unwrap()).into();
+    run["max"] = (*durations.iter().max_by(|a,b| a.partial_cmp(b).unwrap()).unwrap()).into();
+
+    run["memory"] = Null;
+    run["proofSize"] = Null;
+
+    if let Some(path) = run_info.output_file {
+        let mut outfile = match OpenOptions::new()
+            .write(true)
+            .create(true)
+            .append(run_info.append)
+            .open(&path)
+        {
+            Ok(file) => file,
+            Err(e) => {
+                panic!("Failed to open file: {}", e);
+            }
+        };
+
+        if let Err(e) = writeln!(outfile, "{}", run.dump()) {
+            panic!("Failed to write output: {}", e);
+        }
     } else {
-       output += &format!("{},{:.3}\n", run_info.repeats, average.as_secs_f32());
-    }
-
-    if let Some(file) = run_info.output_file {
-
-       let file_exists = Path::new(&file).exists();
-
-       let mut outfile = match OpenOptions::new()
-           .write(true)
-           .create(true)
-           .append(run_info.append)
-           .open(&file)
-       {
-           Ok(file) => file,
-           Err(e) => {
-               panic!("Failed to open file: {}", e);
-           }
-       };
-
-       if !file_exists {
-           if let Err(e) = write!(outfile, "{}", info_row) {
-               panic!("Failed to write info_row: {}", e);
-           }
-       }
-
-       if let Err(e) = write!(outfile, "{}", output) {
-           panic!("Failed to write output: {}", e);
-       }
-    }
-    else {
-        print!("{}", output);
+        println!("{}", run.dump());
     }
 }
