@@ -1,6 +1,8 @@
 use clap::Parser;
 use std::process::{Command, Stdio};
 use json::{object, parse, JsonValue, Null};
+use std::io::{Error, Write};
+use std::fs::{read_to_string, OpenOptions};
 
 /// A CLI tool for running and benchmarking a guest program inside all
 /// supported zkVMs.
@@ -17,6 +19,14 @@ struct Cli {
     /// Make one failiure stop the entire process
     #[arg(short, long)]
     fail_propagation: bool,
+
+    /// Put the resultant output into a file of the given path
+    #[arg(short = 'o', long)]
+    metrics_output: Option<String>,
+
+    /// Append the resultant output to the given file, instead of replacing it
+    #[arg(short, long)]
+    append: bool,
 }
 
 fn run_command(zkvm_guest_command: &str, operation: &str) -> Result<std::process::Output, Error> {
@@ -97,5 +107,24 @@ fn main() {
         runs["benchmarking"].push(run);
     }
 
-    println!("{}", runs.dump());
+    if let Some(path) = cli.metrics_output {
+        let mut outfile = match OpenOptions::new()
+            .write(true)
+            .create(true)
+            .append(cli.append)
+            .truncate(!cli.append)
+            .open(&path)
+        {
+            Ok(file) => file,
+            Err(e) => {
+                panic!("Failed to open file: {}", e);
+            }
+        };
+
+        if let Err(e) = writeln!(outfile, "{}", runs.dump()) {
+            panic!("Failed to write output: {}", e);
+        }
+    } else {
+        println!("{}", runs.dump());
+    }
 }
