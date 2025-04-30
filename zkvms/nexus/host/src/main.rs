@@ -2,6 +2,7 @@ use nexus_sdk::{stwo::seq::Stwo, Local, Prover, Verifiable, Viewable};
 use zkvms_host_io::{
     benchmarkable, read_args, Input, Return,
     RunType::{Execute, Prove, Verify},
+    output_proof_size,
 };
 
 fn main() {
@@ -20,9 +21,11 @@ fn main() {
             let prover: Stwo<Local> = Stwo::new_from_file(&elf_path).expect("failed to load guest program");
 
             println!("Proving execution of vm...");
-            let (view, _) = prover
+            let (view, proof) = prover
                 .prove_with_input(&run_info.private_input, &run_info.public_input)
                 .expect("failed to prove program");
+
+            output_proof_size(&proof);
 
             println!(
                 " output is {:?}!",
@@ -43,6 +46,8 @@ fn main() {
             let (view, proof) = prover
                 .prove_with_input(&run_info.private_input, &run_info.public_input)
                 .expect("failed to prove program");
+
+            output_proof_size(&proof);
 
             println!(
                 " output is {:?}!",

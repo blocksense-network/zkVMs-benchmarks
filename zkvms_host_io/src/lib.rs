@@ -21,6 +21,7 @@ static DEFAULT_PUBLIC_INPUT: &str =
 static DEFAULT_PRIVATE_INPUT: &str =
     include_str!(concat!(env!("INPUTS_DIR"), "/default_private_input.toml"));
 static DEFAULT_ENV: &str = include_str!(concat!(env!("INPUTS_DIR"), "/default.env"));
+static PROOF_SIZE_FILE_PATH: &str = "/tmp/proof_size";
 
 /// A CLI tool for running and benchmarking guest programs inside a zkVM
 /// environment.
@@ -151,6 +152,14 @@ pub fn read_args() -> RunWith {
 
         default_env,
     }
+}
+
+pub fn output_proof_size<T>(proof: &T) {
+    output_proof_size_raw(std::mem::size_of_val(proof));
+}
+
+pub fn output_proof_size_raw(size: usize) {
+    std::fs::write(PROOF_SIZE_FILE_PATH, size.to_string()).expect(&format!("Couldn't write proof size to \"{PROOF_SIZE_FILE_PATH}\"!"));
 }
 
 fn mean(xs: &Vec<f32>) -> f32 {
