@@ -131,12 +131,12 @@ fn main() {
         {
             Ok(file) => file,
             Err(e) => {
-                panic!("Failed to open file: {}", e);
+                panic!("Failed to open metrics output file \"{path}\": {e}");
             }
         };
 
         if let Err(e) = writeln!(outfile, "{}", runs.dump()) {
-            panic!("Failed to write output: {}", e);
+            panic!("Failed to write to metrics output file \"{path}\": {e}");
         }
     } else {
         println!("{}", runs.dump());
