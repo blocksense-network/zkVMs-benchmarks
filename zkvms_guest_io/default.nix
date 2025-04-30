@@ -1,4 +1,4 @@
-{ craneLib-default, guest, zkvms, hostPackages, lib, benchexec, }:
+{ rev, craneLib-default, guest, zkvms, hostPackages, lib, metacraft-labs, benchexec, }:
 let
   commonArgs = {
     name = "${guest}";
@@ -13,7 +13,16 @@ let
     };
 
     PROGRAMS = lib.foldr (zkvm: accum:
-      hostPackages."${zkvm}/${guest}" + "/bin/${zkvm}_${guest}," + accum) ""
+      (builtins.concatStringsSep
+        "|"
+        [
+          zkvm
+          metacraft-labs.${zkvm}.src.rev
+          guest
+          rev
+          (hostPackages."${zkvm}/${guest}" + "/bin/${zkvm}_${guest}")
+        ]
+      ) + "," + accum) ""
       zkvms;
 
     postPatch = ''
