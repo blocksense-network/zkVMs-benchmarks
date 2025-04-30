@@ -30,12 +30,19 @@ struct Cli {
 }
 
 fn run_command(zkvm_guest_command: &str, operation: &str) -> Result<std::process::Output, Error> {
-    Command::new(zkvm_guest_command)
-        .arg(operation)
+    Command::new("runexec")
+        .args(["--no-container", "--"])
+        .args([zkvm_guest_command, operation])
         .arg("--benchmark")
         .args([ "--metrics-output", "/tmp/current_metrics" ])
         .stdout(Stdio::piped())
         .output()
+}
+
+fn get_runexec_value(output: &String, name: &str, end: char) -> String {
+    let start_bytes = output.find(name).unwrap();
+    let right_half = &output[start_bytes + name.len() + 1..];
+    right_half[..right_half.find(end).unwrap()].to_string()
 }
 
 fn main() {
@@ -65,7 +72,7 @@ fn main() {
 
             let output = run_command(zkvm_guest_command, operation);
 
-            // Couldn't run the command
+            // Couldn't run runexec
             if let Err(msg) = output {
                 println!("Failed to run command!");
                 println!("{msg}");
@@ -75,10 +82,10 @@ fn main() {
                 continue;
             }
 
-            // The command ran and therefore produced some output
+            // runexec ran and therefore produced some output
             let output = output.unwrap();
 
-            // The command ran but exited with non-zero status code
+            // runexec exited with non-zero status code
             if !output.status.success() {
                 println!("Command failed!");
             }
@@ -93,15 +100,22 @@ fn main() {
                 );
             }
 
-            // The command ran but exited with non-zero status code
+            // runexec ran but exited with non-zero status code
             if !output.status.success() {
                 break 'guest_iter;
+            }
+
+            // The guest program ran but exited with non-zero status code
+            if get_runexec_value(&stdout, "returnvalue", '\n') != "0" {
+                run[operation] = Null;
+                continue;
             }
 
             let raw_data = &read_to_string("/tmp/current_metrics")
                 .ok()
                 .unwrap();
             run[operation] = json::parse(raw_data).unwrap();
+            run[operation]["memory"] = get_runexec_value(&stdout, "memory", 'B').parse::<u64>().unwrap().into();
         }
 
         runs["benchmarking"].push(run);

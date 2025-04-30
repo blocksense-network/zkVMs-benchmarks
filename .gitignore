@@ -8,3 +8,4 @@ public_input.bin
 private_input.bin
 zkvms_host_io/Cargo.lock
 *.csv
+*.log
