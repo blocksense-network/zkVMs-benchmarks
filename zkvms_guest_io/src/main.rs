@@ -34,6 +34,7 @@ struct Cli {
 
 static COMMAND_LOG_PATH: &str = "/tmp/output.log";
 static METRICS_TEMP_OUTPUT_PATH: &str = "/tmp/current_metrics";
+static PROOF_SIZE_FILE_PATH: &str = "/tmp/proof_size";
 
 fn run_command(zkvm_guest_command: &str, operation: &str) -> Result<std::process::Output, Error> {
     Command::new("runexec")
@@ -196,6 +197,11 @@ fn main() {
                 .unwrap();
             run[operation] = json::parse(raw_data).unwrap();
             run[operation]["memory"] = get_runexec_value(&stdout, "memory", 'B').parse::<u64>().unwrap().into();
+
+            let proofSize = &read_to_string(PROOF_SIZE_FILE_PATH)
+                .ok()
+                .unwrap();
+            run[operation]["proofSize"] = proofSize.parse::<u64>().unwrap().into();
         }
 
         runs["benchmarking"].push(run);

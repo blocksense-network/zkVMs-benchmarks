@@ -5,6 +5,7 @@ use zkvms_host_io::{
     PrivateInput, PublicInput,
     RunType::{Execute, Prove, Verify},
     RunWith,
+    output_proof_size_raw,
 };
 
 static PUBLIC_INPUT_PATH: &str = "public_input.bin";
@@ -94,6 +95,9 @@ fn main() {
                 .arg("--public").arg(public_input.clone())
                 .arg("--private").arg(private_input.clone())
                 .arg("--output").arg(output.clone()));
+
+            let proofSize = std::fs::metadata(output.clone() + "/prog.0.transcript.data").unwrap().len();
+            output_proof_size_raw(proofSize as usize);
         },
         Verify => {
             run(zkwasm_command("prove")
@@ -103,6 +107,9 @@ fn main() {
                 .arg(private_input)
                 .arg("--output")
                 .arg(output.clone()));
+
+            let proofSize = std::fs::metadata(output.clone() + "/prog.0.transcript.data").unwrap().len();
+            output_proof_size_raw(proofSize as usize);
 
             benchmarkable! {
                 run(Command::new("zkwasm-cli")

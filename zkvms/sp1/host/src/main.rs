@@ -2,6 +2,7 @@ use sp1_sdk::{EnvProver, ProverClient, SP1ProofWithPublicValues, SP1Stdin, SP1Ve
 use zkvms_host_io::{
     benchmarkable, foreach_input_field, read_args, Input,
     RunType::{Execute, Prove, Verify},
+    output_proof_size,
 };
 
 /// The ELF (executable and linkable format) file for the Succinct RISC-V zkVM.
@@ -40,12 +41,17 @@ fn main() {
             println!("Number of cycles: {}", report.total_instruction_count());
         },
         Prove => benchmarkable! {
-            let _ = prove(&client, stdin.clone());
+            let (proof, _) = prove(&client, stdin.clone());
+
+            output_proof_size(&proof);
+
             println!("Successfully generated proof!");
         },
         Verify => {
             let (proof, vk) = prove(&client, stdin.clone());
             println!("Successfully generated proof!");
+
+            output_proof_size(&proof);
 
             benchmarkable! {
                 client.verify(&proof, &vk).expect("failed to verify proof");

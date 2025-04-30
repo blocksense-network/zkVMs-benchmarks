@@ -1,6 +1,7 @@
 use zkvms_host_io::{
     benchmarkable, read_args,
     RunType::{Execute, Prove, Verify},
+    output_proof_size,
 };
 
 pub fn main() {
@@ -16,11 +17,17 @@ pub fn main() {
     match run_info.run_type {
         Execute => unreachable!(),
         Prove => benchmarkable! {
-            let (output, _) = prove_guest(run_info.input.clone().into());
+            let (output, proof) = prove_guest(run_info.input.clone().into());
+
+            output_proof_size(&proof);
+
             println!("Prove output: {:?}", output);
         },
         Verify => benchmarkable! {
             let (_, proof) = prove_guest(run_info.input.clone().into());
+
+            output_proof_size(&proof);
+
             let is_valid = verify_guest(proof);
             println!("Verify is valid: {:?}", is_valid);
         },

@@ -9,6 +9,7 @@ use zkm_sdk::{
 use zkvms_host_io::{
     benchmarkable, read_args,
     RunType::{Execute, Prove, Verify},
+    output_proof_size,
 };
 
 async fn get_proof(
@@ -39,6 +40,8 @@ async fn prove(
     proof_results_path: &String,
 ) {
     let prover_result = get_proof(prover_client, prover_input).await;
+
+    output_proof_size(&prover_result);
 
     prover_client
         .process_proof_results(&prover_result, &prover_input, &proof_results_path)
