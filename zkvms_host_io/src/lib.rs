@@ -206,12 +206,12 @@ pub fn emit_benchmark_results(run_info: RunWith, starts: Vec<Instant>, ends: Vec
         {
             Ok(file) => file,
             Err(e) => {
-                panic!("Failed to open file: {}", e);
+                panic!("Failed to open metrics output file \"{path}\": {e}");
             }
         };
 
         if let Err(e) = writeln!(outfile, "{}", run.dump()) {
-            panic!("Failed to write output: {}", e);
+            panic!("Failed to write to metrics output file \"{path}\": {e}");
         }
     } else {
         println!("{}", run.dump());
