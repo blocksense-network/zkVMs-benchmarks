@@ -3,6 +3,9 @@ use std::process::{Command, Stdio};
 use json::{object, parse, JsonValue, Null};
 use std::io::{Error, Write};
 use std::fs::{read_to_string, OpenOptions};
+use smbioslib::*;
+use sysinfo::System;
+use itertools::Itertools;
 
 /// A CLI tool for running and benchmarking a guest program inside all
 /// supported zkVMs.
@@ -56,8 +59,68 @@ fn main() {
     let ignored = cli.ignore.unwrap_or(Vec::new());
 
     let mut runs = object! {
-        "benchmarking": []
+        "benchmarking": [],
+        "hardware": {
+            cpu: [],
+            memory: {
+                model: Null,
+                size: 0,
+                speed: Null,
+            },
+            hardwareAcceleration: [],
+            accelerated: false
+        },
     };
+
+    // Always available information
+    let sys = System::new_all();
+
+    let cpus = sys.cpus().into_iter().unique_by(|c| c.brand()).collect::<Vec<_>>();
+    for cpu in cpus {
+        let mut hcpu = JsonValue::new_object();
+
+        hcpu["model"] = cpu.brand().into();
+        // This core count will be wrong in case the system has more than one CPUs
+        hcpu["cores"] = System::physical_core_count().unwrap_or(0).into();
+        hcpu["speed"] = cpu.frequency().into();
+
+        runs["hardware"]["cpu"].push(hcpu);
+    }
+
+    runs["hardware"]["memory"]["size"] = sys.total_memory().into();
+
+    // Available with root permissions
+    // Note: it is not enough to just run the executable with sudo. runexec connects
+    // to DBus, so you'll need a proper root user session.
+    // Either login through another TTY as root, or use `machinectl shell root@`
+    if let Ok(sys) = table_load_from_device() {
+        // Fix CPU core counts
+        let cpus = sys.filter(|cpu: &SMBiosProcessorInformation| true).collect::<Vec<SMBiosProcessorInformation>>();
+        for mut hcpu in runs["hardware"]["cpu"].members_mut() {
+            if let Some(cpu) = cpus.iter().find(|cpu|
+                if let Some(ver) = cpu.processor_version().ok() {
+                    ver.trim() == hcpu["model"].to_string().trim()
+                }
+                else {
+                    false
+                }
+            ) {
+                if let Some(CoreCount::Count(cores)) = cpu.core_count() {
+                    hcpu["cores"] = cores.into();
+                }
+            }
+        }
+
+        // Add memory model and speed
+        if let Some(memory) = sys.find_map(|memory: SMBiosMemoryDevice| Some(memory)) {
+            if let Some(model) = memory.part_number().ok() {
+                runs["hardware"]["memory"]["model"] = model.trim().into();
+            }
+            if let Some(MemorySpeed::MTs(speed)) = memory.speed() {
+                runs["hardware"]["memory"]["speed"] = speed.into();
+            }
+        }
+    }
 
     'guest_iter: for zkvm_guest_command in zkvm_guest_commands.into_iter() {
         if ignored.iter().any(|i| zkvm_guest_command.contains(i)) {
