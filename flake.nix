@@ -70,6 +70,7 @@
             inherit zkvms;
             inherit hostPackages;
             inherit craneLib-default;
+            rev = self.rev or self.dirtyRev;
           };
         }) { } guests;
     in {

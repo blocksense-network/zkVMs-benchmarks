@@ -122,16 +122,27 @@ fn main() {
         }
     }
 
-    'guest_iter: for zkvm_guest_command in zkvm_guest_commands.into_iter() {
-        if ignored.iter().any(|i| zkvm_guest_command.contains(i)) {
+    'guest_iter: for zkvm_info in zkvm_guest_commands.into_iter() {
+        let zkvm_info_fields: Vec<&str> = zkvm_info.split('|').collect();
+        let zkvm = zkvm_info_fields[0];
+
+        if ignored.iter().any(|i| zkvm.contains(i)) {
             continue;
         }
 
+        let zkvmRev = zkvm_info_fields[1];
+        let guest = zkvm_info_fields[2];
+        let commit = zkvm_info_fields[3];
+        let zkvm_guest_command = zkvm_info_fields[4];
+
         let mut run = JsonValue::new_object();
-        run["name"] = zkvm_guest_command.into();
+        run["zkvmName"] = zkvm.into();
+        run["zkvmRev"] = zkvmRev.into();
+        run["programName"] = guest.into();
+        run["commit"] = commit.into();
 
         for operation in ["execute", "prove", "verify"] {
-            println!("== {operation} {zkvm_guest_command} ==");
+            println!("== {operation} {zkvm} ==");
 
             let output = run_command(zkvm_guest_command, operation);
 
