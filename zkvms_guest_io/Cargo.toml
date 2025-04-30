@@ -5,4 +5,7 @@ edition = "2021"
 
 [dependencies]
 clap = { version = "4.5.31", features = ["derive"] }
+itertools = "0.14.0"
 json = "0.12.4"
+smbios-lib = "0.9.2"
+sysinfo = "0.34.2"
