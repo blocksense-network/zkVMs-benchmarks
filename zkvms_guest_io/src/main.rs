@@ -32,12 +32,15 @@ struct Cli {
     append: bool,
 }
 
+static COMMAND_LOG_PATH: &str = "/tmp/output.log";
+static METRICS_TEMP_OUTPUT_PATH: &str = "/tmp/current_metrics";
+
 fn run_command(zkvm_guest_command: &str, operation: &str) -> Result<std::process::Output, Error> {
     Command::new("runexec")
-        .args(["--no-container", "--"])
+        .args(["--no-container", "--output", COMMAND_LOG_PATH, "--"])
         .args([zkvm_guest_command, operation])
         .arg("--benchmark")
-        .args([ "--metrics-output", "/tmp/current_metrics" ])
+        .args([ "--metrics-output", METRICS_TEMP_OUTPUT_PATH ])
         .stdout(Stdio::piped())
         .output()
 }
@@ -182,10 +185,13 @@ fn main() {
             // The guest program ran but exited with non-zero status code
             if get_runexec_value(&stdout, "returnvalue", '\n') != "0" {
                 run[operation] = Null;
+                if let Some(log) = read_to_string(COMMAND_LOG_PATH).ok() {
+                    println!("{log}");
+                }
                 continue;
             }
 
-            let raw_data = &read_to_string("/tmp/current_metrics")
+            let raw_data = &read_to_string(METRICS_TEMP_OUTPUT_PATH)
                 .ok()
                 .unwrap();
             run[operation] = json::parse(raw_data).unwrap();
