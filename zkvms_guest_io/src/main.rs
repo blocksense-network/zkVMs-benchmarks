@@ -193,6 +193,7 @@ fn main() {
             if get_runexec_value(&stdout, "returnvalue", '\n') != "0" {
                 run[operation] = Null;
                 if let Some(log) = read_to_string(COMMAND_LOG_PATH).ok() {
+                    println!("Command log:");
                     println!("{log}");
                 }
                 continue;
