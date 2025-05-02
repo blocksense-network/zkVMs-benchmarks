@@ -5,11 +5,8 @@ writeShellApplication {
   runtimeInputs = [ cargo ];
 
   text = let
-    namesAndPaths = builtins.concatStringsSep
-      " "
-      (builtins.map
-        (zkvm: zkvm.pname + "," + zkvm.outPath)
-        zkvms);
+    namesAndPaths = builtins.concatStringsSep " "
+      (builtins.map (zkvm: zkvm.pname + "," + zkvm.outPath) zkvms);
   in ''
     updatePath() {
         sed -i "s|/nix/store/[^-]\+-$1-[^/]\+|$2|" Cargo.toml
