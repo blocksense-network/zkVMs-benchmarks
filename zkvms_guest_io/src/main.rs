@@ -199,14 +199,20 @@ fn main() {
                 continue;
             }
 
-            let raw_data = &read_to_string(METRICS_TEMP_OUTPUT_PATH).ok().unwrap();
+            let raw_data = &read_to_string(METRICS_TEMP_OUTPUT_PATH)
+                .ok()
+                .expect(&format!(
+                    "Couldn't read temporary metrics output file \"{METRICS_TEMP_OUTPUT_PATH}\"!"
+                ));
             run[operation] = json::parse(raw_data).unwrap();
             run[operation]["memory"] = get_runexec_value(&stdout, "memory", 'B')
                 .parse::<u64>()
                 .unwrap()
                 .into();
 
-            let proofSize = &read_to_string(PROOF_SIZE_FILE_PATH).ok().unwrap();
+            let proofSize = &read_to_string(PROOF_SIZE_FILE_PATH).ok().expect(&format!(
+                "Couldn't read temporary proof size file \"{PROOF_SIZE_FILE_PATH}\"!"
+            ));
             run[operation]["proofSize"] = proofSize.parse::<u64>().unwrap().into();
         }
 
