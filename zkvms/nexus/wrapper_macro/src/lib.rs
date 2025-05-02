@@ -35,13 +35,29 @@ pub fn make_wrapper(item: TokenStream) -> TokenStream {
     let fd = FunctionDefinition::new(&item);
 
     let mut out = TokenStream::new();
-    out.extend(format!("let ({}) = read_public_input::<({})>().unwrap();", fd.grouped_public_patterns(), fd.grouped_public_types()).parse::<TokenStream>());
-    out.extend(format!("let ({}) = read_private_input::<({})>().unwrap();", fd.grouped_private_patterns(), fd.grouped_private_types()).parse::<TokenStream>());
+    out.extend(
+        format!(
+            "let ({}) = read_public_input::<({})>().unwrap();",
+            fd.grouped_public_patterns(),
+            fd.grouped_public_types()
+        )
+        .parse::<TokenStream>(),
+    );
+    out.extend(
+        format!(
+            "let ({}) = read_private_input::<({})>().unwrap();",
+            fd.grouped_private_patterns(),
+            fd.grouped_private_types()
+        )
+        .parse::<TokenStream>(),
+    );
 
     out.extend(
         format!(
             "write_public_output::<{}>(&zkp::{}({}));",
-            fd.return_type, fd.name, fd.grouped_patterns()
+            fd.return_type,
+            fd.name,
+            fd.grouped_patterns()
         )
         .parse::<TokenStream>(),
     );

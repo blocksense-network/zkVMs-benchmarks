@@ -2,9 +2,8 @@ use hex::FromHex;
 use risc0_zkp::core::digest::Digest;
 use risc0_zkvm::{default_executor, default_prover, ExecutorEnv, Receipt};
 use zkvms_host_io::{
-    benchmarkable, foreach_input_field, read_args, Input, Output,
+    benchmarkable, foreach_input_field, output_proof_size, read_args, Input, Output,
     RunType::{Execute, Prove, Verify},
-    output_proof_size,
 };
 
 // https://github.com/risc0/risc0/blob/881e512732eca72849b2d0e263a1242aba3158af/risc0/build/src/lib.rs#L280-L284

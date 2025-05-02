@@ -159,14 +159,15 @@ pub fn output_proof_size<T>(proof: &T) {
 }
 
 pub fn output_proof_size_raw(size: usize) {
-    std::fs::write(PROOF_SIZE_FILE_PATH, size.to_string()).expect(&format!("Couldn't write proof size to \"{PROOF_SIZE_FILE_PATH}\"!"));
+    std::fs::write(PROOF_SIZE_FILE_PATH, size.to_string()).expect(&format!(
+        "Couldn't write proof size to \"{PROOF_SIZE_FILE_PATH}\"!"
+    ));
 }
 
 fn mean(xs: &Vec<f32>) -> f32 {
     if xs.len() == 1 {
         xs[0]
-    }
-    else {
+    } else {
         statistical::mean(&xs)
     }
 }
@@ -174,8 +175,7 @@ fn mean(xs: &Vec<f32>) -> f32 {
 fn stddev(xs: &Vec<f32>) -> f32 {
     if xs.len() == 1 {
         0.0
-    }
-    else {
+    } else {
         statistical::standard_deviation(&xs, None)
     }
 }
@@ -199,8 +199,16 @@ pub fn emit_benchmark_results(run_info: RunWith, starts: Vec<Instant>, ends: Vec
 
     run["mean"] = mean(&durations).into();
     run["deviation"] = stddev(&durations).into();
-    run["min"] = (*durations.iter().min_by(|a,b| a.partial_cmp(b).unwrap()).unwrap()).into();
-    run["max"] = (*durations.iter().max_by(|a,b| a.partial_cmp(b).unwrap()).unwrap()).into();
+    run["min"] = (*durations
+        .iter()
+        .min_by(|a, b| a.partial_cmp(b).unwrap())
+        .unwrap())
+    .into();
+    run["max"] = (*durations
+        .iter()
+        .max_by(|a, b| a.partial_cmp(b).unwrap())
+        .unwrap())
+    .into();
 
     run["memory"] = Null;
     run["proofSize"] = Null;

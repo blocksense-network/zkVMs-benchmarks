@@ -61,8 +61,18 @@ pub fn make_wrapper(item: TokenStream) -> TokenStream {
 
     let mut out = TokenStream::new();
 
-    insert_reads(&mut out, fd.public_patterns(), fd.public_types(), "read_public");
-    insert_reads(&mut out, fd.private_patterns(), fd.private_types(), "read_private");
+    insert_reads(
+        &mut out,
+        fd.public_patterns(),
+        fd.public_types(),
+        "read_public",
+    );
+    insert_reads(
+        &mut out,
+        fd.private_patterns(),
+        fd.private_types(),
+        "read_private",
+    );
 
     out.extend(
         format!(
@@ -73,7 +83,8 @@ pub fn make_wrapper(item: TokenStream) -> TokenStream {
             write(val);
         }}
     ",
-            fd.name, fd.grouped_patterns()
+            fd.name,
+            fd.grouped_patterns()
         )
         .parse::<TokenStream>(),
     );

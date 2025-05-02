@@ -1,8 +1,7 @@
 use nexus_sdk::{stwo::seq::Stwo, Local, Prover, Verifiable, Viewable};
 use zkvms_host_io::{
-    benchmarkable, read_args, Input, Return,
+    benchmarkable, output_proof_size, read_args, Input, Return,
     RunType::{Execute, Prove, Verify},
-    output_proof_size,
 };
 
 fn main() {
