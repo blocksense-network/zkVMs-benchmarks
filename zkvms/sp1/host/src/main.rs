@@ -1,8 +1,7 @@
 use sp1_sdk::{EnvProver, ProverClient, SP1ProofWithPublicValues, SP1Stdin, SP1VerifyingKey};
 use zkvms_host_io::{
-    benchmarkable, foreach_input_field, read_args, Input,
+    benchmarkable, foreach_input_field, output_proof_size, read_args, Input,
     RunType::{Execute, Prove, Verify},
-    output_proof_size,
 };
 
 /// The ELF (executable and linkable format) file for the Succinct RISC-V zkVM.

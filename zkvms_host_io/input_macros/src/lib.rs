@@ -66,8 +66,14 @@ static DERIVES: &str = "#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deseria
 pub fn generate_output_type_input_struct(_: TokenStream) -> TokenStream {
     let fd = new_fd();
 
-    let sep = if fd.public_types().is_empty() { "" } else { ", " };
-    let output_type = format!("pub type Output = ({} {} {});", fd.grouped_public_types(), sep, fd.return_type).to_string();
+    let sep = if fd.types().is_empty() { "" } else { ", " };
+    let output_type = format!(
+        "pub type Output = ({} {} {});",
+        fd.grouped_public_types(),
+        sep,
+        fd.return_type
+    )
+    .to_string();
 
     let return_type = format!("pub type Return = {};", fd.return_type).to_string();
 
@@ -102,7 +108,8 @@ pub fn generate_output_type_input_struct(_: TokenStream) -> TokenStream {
         .map(|x| format!("input.{x},"))
         .collect::<String>();
     let types = fd.grouped_types();
-    let struct_def = &format!("
+    let struct_def = &format!(
+        "
         {DERIVES} pub struct Input {{
             {attrs}
         }}
@@ -111,7 +118,9 @@ pub fn generate_output_type_input_struct(_: TokenStream) -> TokenStream {
                 ({convertion})
             }}
         }}
-    ").to_string();
+    "
+    )
+    .to_string();
 
     (output_type + &return_type + &public_input_type + &private_input_type + &struct_def)
         .parse::<TokenStream>()
@@ -159,7 +168,8 @@ pub fn foreach_private_input_field(item: TokenStream) -> TokenStream {
 /// parameters.
 #[proc_macro]
 pub fn benchmarkable(item: TokenStream) -> TokenStream {
-    format!(r#"
+    format!(
+        r#"
         {{
              use std::time::Instant;
 
@@ -182,5 +192,8 @@ pub fn benchmarkable(item: TokenStream) -> TokenStream {
                  zkvms_host_io::emit_benchmark_results(run_info, starts, ends);
              }}
         }}
-    "#).parse().unwrap()
+    "#
+    )
+    .parse()
+    .unwrap()
 }

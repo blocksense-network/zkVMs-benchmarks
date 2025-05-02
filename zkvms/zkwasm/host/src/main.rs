@@ -1,11 +1,10 @@
 use std::io::{self, Write};
 use std::process::{Command, Stdio};
 use zkvms_host_io::{
-    benchmarkable, foreach_private_input_field, foreach_public_input_field, read_args,
-    PrivateInput, PublicInput,
+    benchmarkable, foreach_private_input_field, foreach_public_input_field, output_proof_size_raw,
+    read_args, PrivateInput, PublicInput,
     RunType::{Execute, Prove, Verify},
     RunWith,
-    output_proof_size_raw,
 };
 
 static PUBLIC_INPUT_PATH: &str = "public_input.bin";
@@ -108,7 +107,9 @@ fn main() {
                 .arg("--output")
                 .arg(output.clone()));
 
-            let proofSize = std::fs::metadata(output.clone() + "/prog.0.transcript.data").unwrap().len();
+            let proofSize = std::fs::metadata(output.clone() + "/prog.0.transcript.data")
+                .unwrap()
+                .len();
             output_proof_size_raw(proofSize as usize);
 
             benchmarkable! {

@@ -1,11 +1,11 @@
 use clap::Parser;
-use std::process::{Command, Stdio};
-use json::{object, parse, JsonValue, Null};
-use std::io::{Error, Write};
-use std::fs::{read_to_string, OpenOptions};
-use smbioslib::*;
-use sysinfo::System;
 use itertools::Itertools;
+use json::{object, parse, JsonValue, Null};
+use smbioslib::*;
+use std::fs::{read_to_string, OpenOptions};
+use std::io::{Error, Write};
+use std::process::{Command, Stdio};
+use sysinfo::System;
 
 /// A CLI tool for running and benchmarking a guest program inside all
 /// supported zkVMs.
@@ -41,7 +41,7 @@ fn run_command(zkvm_guest_command: &str, operation: &str) -> Result<std::process
         .args(["--no-container", "--output", COMMAND_LOG_PATH, "--"])
         .args([zkvm_guest_command, operation])
         .arg("--benchmark")
-        .args([ "--metrics-output", METRICS_TEMP_OUTPUT_PATH ])
+        .args(["--metrics-output", METRICS_TEMP_OUTPUT_PATH])
         .stdout(Stdio::piped())
         .output()
 }
@@ -79,7 +79,11 @@ fn main() {
     // Always available information
     let sys = System::new_all();
 
-    let cpus = sys.cpus().into_iter().unique_by(|c| c.brand()).collect::<Vec<_>>();
+    let cpus = sys
+        .cpus()
+        .into_iter()
+        .unique_by(|c| c.brand())
+        .collect::<Vec<_>>();
     for cpu in cpus {
         let mut hcpu = JsonValue::new_object();
 
@@ -99,16 +103,17 @@ fn main() {
     // Either login through another TTY as root, or use `machinectl shell root@`
     if let Ok(sys) = table_load_from_device() {
         // Fix CPU core counts
-        let cpus = sys.filter(|cpu: &SMBiosProcessorInformation| true).collect::<Vec<SMBiosProcessorInformation>>();
+        let cpus = sys
+            .filter(|cpu: &SMBiosProcessorInformation| true)
+            .collect::<Vec<SMBiosProcessorInformation>>();
         for mut hcpu in runs["hardware"]["cpu"].members_mut() {
-            if let Some(cpu) = cpus.iter().find(|cpu|
+            if let Some(cpu) = cpus.iter().find(|cpu| {
                 if let Some(ver) = cpu.processor_version().ok() {
                     ver.trim() == hcpu["model"].to_string().trim()
-                }
-                else {
+                } else {
                     false
                 }
-            ) {
+            }) {
                 if let Some(CoreCount::Count(cores)) = cpu.core_count() {
                     hcpu["cores"] = cores.into();
                 }
@@ -168,7 +173,8 @@ fn main() {
                 println!("Command failed!");
             }
 
-            let stdout = String::from_utf8(output.stdout).expect("failed to convert stdout to String");
+            let stdout =
+                String::from_utf8(output.stdout).expect("failed to convert stdout to String");
             println!("{stdout}");
 
             if !output.stderr.is_empty() {
@@ -192,15 +198,14 @@ fn main() {
                 continue;
             }
 
-            let raw_data = &read_to_string(METRICS_TEMP_OUTPUT_PATH)
-                .ok()
-                .unwrap();
+            let raw_data = &read_to_string(METRICS_TEMP_OUTPUT_PATH).ok().unwrap();
             run[operation] = json::parse(raw_data).unwrap();
-            run[operation]["memory"] = get_runexec_value(&stdout, "memory", 'B').parse::<u64>().unwrap().into();
+            run[operation]["memory"] = get_runexec_value(&stdout, "memory", 'B')
+                .parse::<u64>()
+                .unwrap()
+                .into();
 
-            let proofSize = &read_to_string(PROOF_SIZE_FILE_PATH)
-                .ok()
-                .unwrap();
+            let proofSize = &read_to_string(PROOF_SIZE_FILE_PATH).ok().unwrap();
             run[operation]["proofSize"] = proofSize.parse::<u64>().unwrap().into();
         }
 

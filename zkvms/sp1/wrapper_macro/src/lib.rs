@@ -51,7 +51,9 @@ pub fn make_wrapper(item: TokenStream) -> TokenStream {
         .collect::<String>();
     out.extend(commits.parse::<TokenStream>());
 
-    out.extend(format!("commit(&zkp::{}({}));", fd.name, fd.grouped_patterns()).parse::<TokenStream>());
+    out.extend(
+        format!("commit(&zkp::{}({}));", fd.name, fd.grouped_patterns()).parse::<TokenStream>(),
+    );
 
     let mut block = TokenStream::new();
     block.extend(format!("{{ {} }}", out).parse::<TokenStream>());

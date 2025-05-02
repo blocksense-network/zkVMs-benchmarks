@@ -7,9 +7,8 @@ use zkm_sdk::{
 };
 
 use zkvms_host_io::{
-    benchmarkable, read_args,
+    benchmarkable, output_proof_size, read_args,
     RunType::{Execute, Prove, Verify},
-    output_proof_size,
 };
 
 async fn get_proof(
