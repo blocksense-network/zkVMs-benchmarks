@@ -49,8 +49,8 @@ The value for each of these is taken, with this precedence, by the user shell en
 |        | VERIFYING_KEY_PATH | path (string) | /tmp/input       | Directory to output the verification key                                                                                                     |
 | zkwasm | ZKWASM_K           | integer       | 19               | The "K" value for zkWasm. It's value is between 19 and 22 inclusive. For larger inputs you'll need to increment it, but the proving time also increases. You'll need to find the smallest one experimentally.|
 |        | ZKWASM_SCHEME      | string        | shplonk          | Proving system                                                                                                                               |
-|        | ZKWASM_OUTPUT      | path (string) | ./output         | Directory to store output                                                                                                                    |
-|        | ZKWASM_PARAMS      | path (string) | ./params         | Directory to store parameter information                                                                                                     |
+|        | ZKWASM_OUTPUT      | path (string) | /tmp/output      | Directory to store output                                                                                                                    |
+|        | ZKWASM_PARAMS      | path (string) | /tmp/params      | Directory to store parameter information                                                                                                     |
 
 > [!NOTE]
 > Looking through the source code, you may notice other environment variables which are used.
