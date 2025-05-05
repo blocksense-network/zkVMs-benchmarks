@@ -30,23 +30,23 @@ The `guests` directory provides a variety of programs, all of which are proven t
 It is advisable to first try and run one of them, so you can make sure Nix is installed and working properly.
 
 The smallest one is `fibonacci`.
-To make *all* zkVMs generate a proof for it just run:
+To make *all* zkVMs execute, generate a proof for and verify it run:
 
 ```sh
-nix run github:blocksense-network/zkVMs-benchmarks#fibonacci -- prove
+nix run github:blocksense-network/zkVMs-benchmarks#fibonacci
 ```
 
-> [!NOTE]
-> Take notice of the space between `--` and `prove`!
-> It marks an "end of options", as specified by [the POSIX specification](https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_02).
-
-Or to make, for example, [SP1](https://docs.succinct.xyz/docs/sp1/introduction) generate a proof and verify it, you may run:
+Or, to make only [SP1](https://docs.succinct.xyz/docs/sp1/introduction) generate a proof and verify it, you may run:
 
 ```sh
 nix run github:blocksense-network/zkVMs-benchmarks#sp1/fibonacci -- verify
 ```
 
-As you can tell, you may issue `...#ZKVM/PROGRAM ...` to execute/prove/verify a single program on the chosen zkVMs or `...#PROGRAM ...` to do the same on *all* zkVMs.
+> [!NOTE]
+> Take notice of the space between `--` and `verify`!
+> It marks an "end of options", as specified by [the POSIX specification](https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_02).
+
+As you can tell, you may issue `...#ZKVM/PROGRAM ...` to execute/prove/verify a single program on the chosen zkVMs or `...#PROGRAM ...` to execute, prove *and* verify on *all* zkVMs.
 The format `...#ZKVM ...` is also supported, pairing the chosen zkVM with the **default** guest program (currently `graph_coloring`).
 
 The possible values for `ZKVM` correspond to the directory names inside `zkvms` folder at the root of the repository.
@@ -92,7 +92,7 @@ nix run github:blocksense-network/zkVMs-benchmarks#BINARY -- PARAMETERS
 `BINARY` is either in the form `ZKVM`, `PROGRAM` or `ZKVM/PROGRAM`.
 
 As already discussed in "[Run/benchmark a "built-in" program](#runbenchmark-a-built-in-program)", the possible values for `ZKVM` are the subdirectory names inside `zkvms` and for `PROGRAM` are the subdirectory names inside `guests`.
-The first form executes/proves/verifies the **default** program (currently `graph_coloring`) with the selected zkVM, the second selects a given program to be ran across **all** zkVMs and the third chooses a specific zkVM and program to act upon.
+The first form executes/proves/verifies the **default** program (currently `graph_coloring`) with the selected zkVM, the second selects a given program to be executed, proved and verified across **all** zkVMs, and with the third you select a specific zkVM and program to act upon.
 
 All command parameters after `--` are passed to it.
 As a start, you should look at the built-in help messages.
@@ -119,10 +119,8 @@ Arguments:
 Options:
   -b, --benchmark
           Enable benchmark timer and formatted output
-  -r, --repeat <REPEAT>
+  -r, --runs <REPEAT>
           Benchmark the given action multiple times
-  -m, --millis
-          Output timings as milliseconds instead of seconds
   -o, --metrics-output <METRICS_OUTPUT>
           Put the benchmark's formatted output into a file of the given path
   -a, --append
@@ -150,51 +148,183 @@ Arguments:
 Options:
   -i, --ignore <IGNORE>...  Ignored zkVMs. Values are substrings of names
   -f, --fail-propagation    Make one failiure stop the entire process
+  -o, --metrics-output <METRICS_OUTPUT>
+          Put the resultant output into a file of the given path
+  -a, --append
+          Append the resultant output to the given file, instead of replacing it
   -h, --help                Print help
 ```
 
 ### Example: benchmark a single program
 
 As already mentioned, if you omit a zkVM when issuing `nix run`, all zkVMs will be ran for the given program.
-However, when benchmarking, to get a useable output, you need to use `--metrics-output` with `--append`:
+However, when benchmarking, to get a useable output, you need to use `--metrics-output`:
 
 ```sh
-nix run github:blocksense-network/zkVMs-benchmarks#fibonacci -- prove --benchmark --metrics-output result.csv --append
+nix run github:blocksense-network/zkVMs-benchmarks#fibonacci -- --metrics-output result.json
 ```
 
-### Example: benchmark a single program with custom input and millisecond precision
+### Example: benchmark proving of a single program and zkVM with custom input
 
-Extending on the previous example, we can pass public and private input TOML files as positional arguments, after `prove`:
+Contrary to the previous example, with a `ZKVM/PROGRAM` command we need to set a `--benchmark` flag alongside a `--metrics-output` if we want to benchmark (otherwise we just execute the given operation without other output).
+We can pass public and private input TOML files as positional arguments, after `prove`:
 
 ```sh
-nix run github:blocksense-network/zkVMs-benchmarks#fibonacci -- prove ./private.toml ./public.toml -bamo result.csv
+nix run github:blocksense-network/zkVMs-benchmarks#sp1/fibonacci -- prove ./private.toml ./public.toml --benchmark --metrics-output result.json
 ```
 
 Input cannot be fed through stdin and no other format, except TOML, is supported.
 
-## Benchmark metrics output format
+## Metrics output format
 
-When running with the `--benchmark` attribute, additional data is emitted - the metrics output.
-This is a very simple CSV content, with two columns: the first a name and the second a value.
+### `ZKVM/PROGRAM`
 
-Here is a table with the currently available pairs:
+When running a `ZKVM/PROGRAM` with the `--benchmark` attribute, additional data is emitted - the metrics output.
+This is a simple JSON object, conforming to the following schema:
 
-| Name     | Value type | Shown  |
-| -------- | ---------- | ------ |
-| zkvm     | String     | Always |
-| guest    | String     | Always |
-| duration | Integer    | Always |
-| repeats  | Integer    | Always |
-| average  | Integer    | Always |
+| Field name    | Type   | Description                                                                    |
+| ----------    | ----   | -----------                                                                    |
+| timeStarted   | String | Timestamp                                                                      |
+| runs          | Number | Positive whole number (greater than 0)                                         |
+| totalDuration | Number | How much time the operation took for all runs. Format is seconds.milliseconds  |
+| mean          | Number | Average amount of time the operation takes accross all runs                    |
+| deviation     | Number | Standard deviation between the durations of all runs                           |
+| min           | Number | Shortest duration of the operation across all runs                             |
+| max           | Number | Longest duration of the operation across all runs                              |
+| memory        | Number | Maximum memory used during the operation in Bytes. **Often null!**             |
+| proofSize     | Number | null if no proof was generated, otherwise the size in Bytes. **Often null!**   |
 
-### Example output
+Since this same format is used for `execute`, `prove` and `verify` fields of [`PROGRAM`](#PROGRAM), the last two entries are **not** null **only** when a `PROGRAM` command is ran.
 
-```csv
-zkvm,sp1
-guest,fibonacci
-duration,4
-repeats,1
-average,4
+#### Example output
+
+```json
+average{
+  "timeStarted": "2025-04-29 15:33:42.123863459 +03:00",
+  "runs": 3,
+  "totalDuration": 16.415178298950195,
+  "mean": 5.4717254638671875,
+  "deviation": 0.0693691223859787,
+  "min": 5.407856464385986,
+  "max": 5.545524597167969,
+  "memory": null,
+  "proofSize": null
+}
+```
+
+### `PROGRAM`
+
+When running a `PROGRAM` command, another format of the metrics output is emmited.
+Again, the format is JSON, conforming to this schema:
+
+| Field name           | Type               | Description                                                                                                                          |
+| ------------         | ------             | -----------                                                                                                                          |
+| benchmarking         | Array of Benchmark | Stores objects with results and information from a benchmarking operation. New object each time a benchmarking operation is started. |
+| hardware             | Hardware Object    | Stores hardware information                                                                                                          |
+
+*Benchmark schema:*
+
+| Field name  | Type   | Description                                                                             |
+| ----------  | ----   | -----------                                                                             |
+| zkvmName    | String | Name of zkVM, used in the current run                                                   |
+| zkvmRev     | String | Commit or tag on which the zkVM is built                                                |
+| programName | String | Name of program which is benchmarked                                                    |
+| input       | String | Serialized (base64) representation of the input used                                    |
+| commit      | String | Commit of the zkVMs-benchmarks repo                                                     |
+| execute     | Object | Object of metrics-output form `ZKVM/PROGRAM` or null when the operation isn’t supported |
+| prove       | Object | Object of metrics-output form `ZKVM/PROGRAM` or null when the operation isn’t supported |
+| verify      | Object | Object of metrics-output form `ZKVM/PROGRAM` or null when the operation isn’t supported |
+
+*Hardware schema:*
+
+| Field name           | Type          | Description                                                       |
+| ----------           | ----          | -----------                                                       |
+| cpu                  | Array of CPU  | List of unique, dedicated, processors                             |
+| memory               | Memory Object | RAM                                                               |
+| hardwareAcceleration | Array of GPU  | GPUs **This is always empty!**                                    |
+| accelerated          | Boolean       | Whether hardware acceleration was used. **This is always false!** |
+
+*CPU schema:*
+
+| Field name | Type   | Description                            |
+| ---------- | ----   | -----------                            |
+| model      | String | CPU model                              |
+| cores      | Number | Positive whole number (greater than 0) |
+| speed      | Number | CPU speed (in GHz)                     |
+
+*Memory schema:*
+
+| Field name | Type   | Description           |
+| ---------- | ----   | -----------           |
+| model      | String | Memory model          |
+| size       | Number | Memory size (in Bytes). **Available only when command is ran with root permissions!**   |
+| speed      | Number | Memory speed (in MHz) **Available only when command is ran with root permissions!**|
+
+*GPU schema:*
+
+| Field name | Type   | Description    |
+| ---------- | ----   | -----------    |
+| model      | String | GPU model      |
+| cores      | Number | GPU cores      |
+| speed      | Number | GPU core speed |
+
+#### Example output
+
+**The command which produced this output was ran with root permissions!**
+
+```json
+{
+  "benchmarking": [
+    {
+      "name": "/nix/store/lbp252948zkvlansp5x40y8sxhh2nagk-sp1_fibonacci-unstable-2025-03-10/bin/sp1_fibonacci",
+      "execute": {
+        "timeStarted": "2025-04-29 15:19:17.343992869 +03:00",
+        "runs": 1,
+        "totalDuration": 0.0038770779501646757,
+        "mean": 0.0038770779501646757,
+        "deviation": 0,
+        "min": 0.0038770779501646757,
+        "max": 0.0038770779501646757,
+        "memory": 1125048320,
+        "proofSize": 192
+      },
+      "prove": {
+        "timeStarted": "2025-04-29 15:19:19.119432201 +03:00",
+        "runs": 1,
+        "totalDuration": 5.817917346954346,
+        "mean": 5.817917346954346,
+        "deviation": 0,
+        "min": 5.817917346954346,
+        "max": 5.817917346954346,
+        "memory": 4881145856,
+        "proofSize": 192
+      },
+      "verify": {
+        "timeStarted": "2025-04-29 15:19:32.385317873 +03:00",
+        "runs": 1,
+        "totalDuration": 0.10108701884746552,
+        "mean": 0.10108701884746552,
+        "deviation": 0,
+        "min": 0.10108701884746552,
+        "max": 0.10108701884746552,
+        "memory": 4787023872,
+        "proofSize": 192
+      }
+    },
+  ],
+  "hardware": {
+    "cpu": [
+      { "model": "AMD Ryzen 9 9950X 16-Core Processor", "cores": 16, "speed": 600 }
+    ],
+    "memory": {
+      "model": "KF556C36-32",
+      "size": 132511961088,
+      "speed": 4800
+    },
+    "hardwareAcceleration": [],
+    "accelerated": false
+  }
+}
 ```
 
 ## Limitations
