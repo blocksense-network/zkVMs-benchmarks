@@ -72,7 +72,7 @@ pub enum RunType {
 pub struct RunWith {
     pub run_type: RunType,
     pub benchmarking: bool,
-    pub repeats: usize,
+    pub runs: usize,
     pub millis: bool,
     pub output_file: Option<String>,
     pub append: bool,
@@ -141,7 +141,7 @@ pub fn read_args() -> RunWith {
     RunWith {
         run_type: cli.run_type,
         benchmarking: cli.benchmark,
-        repeats: cli.repeat.unwrap_or(1),
+        runs: cli.repeat.unwrap_or(1),
         millis: cli.millis,
         output_file: cli.metrics_output,
         append: cli.append,
@@ -188,7 +188,7 @@ pub fn emit_benchmark_results(run_info: RunWith, starts: Vec<Instant>, ends: Vec
     let duration = *ends.last().unwrap() - *starts.first().unwrap();
 
     run["timeStarted"] = (now - duration).to_string().into();
-    run["repeats"] = run_info.repeats.into();
+    run["runs"] = run_info.runs.into();
     run["totalDuration"] = duration.as_secs_f32().into();
 
     let durations = starts

@@ -176,7 +176,7 @@ pub fn benchmarkable(item: TokenStream) -> TokenStream {
              let mut starts = Vec::new();
              let mut ends = Vec::new();
 
-             for i in 1..=run_info.repeats {{
+             for i in 1..=run_info.runs {{
                  if run_info.benchmarking {{
                      starts.push(Instant::now());
                  }}
