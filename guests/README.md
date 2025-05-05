@@ -12,11 +12,11 @@ These are normal Rust programs, with certain specific patterns implemented for z
 1. **Copy the project to this directory.**
 
    If you refer to local path dependencies, which you want to include with the project, move them inside the `guest/YOUR_PROJECT/` directory!
-   Everything directly inside `guests` is expected to be a crate, setup to be ran by the zkVMs.
+   Everything directly inside `guests` is expected to be setup for running by the zkVMs.
 
 2. **Convert your project into a library.**
 
-   You'll mainly need to rename `src/main.rs` to `src/lib.rs`.
+   The main thing you need to do is rename `src/main.rs` to `src/lib.rs`.
 
 3. **Update your `Cargo.toml`**
 
