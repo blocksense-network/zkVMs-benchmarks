@@ -48,10 +48,6 @@ struct Cli {
     #[arg(short, long, requires = "benchmark")]
     repeat: Option<usize>,
 
-    /// Output timings as milliseconds instead of seconds
-    #[arg(short, long, requires = "benchmark")]
-    millis: bool,
-
     /// Put the benchmark's formatted output into a file of the given path
     #[arg(short = 'o', long, requires = "benchmark")]
     metrics_output: Option<String>,
@@ -73,7 +69,6 @@ pub struct RunWith {
     pub run_type: RunType,
     pub benchmarking: bool,
     pub runs: usize,
-    pub millis: bool,
     pub output_file: Option<String>,
     pub append: bool,
 
@@ -142,7 +137,6 @@ pub fn read_args() -> RunWith {
         run_type: cli.run_type,
         benchmarking: cli.benchmark,
         runs: cli.repeat.unwrap_or(1),
-        millis: cli.millis,
         output_file: cli.metrics_output,
         append: cli.append,
 
