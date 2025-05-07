@@ -15,6 +15,12 @@ use sysinfo::System;
 #[derive(Parser, Debug)]
 #[command(about, long_about = None)]
 struct Cli {
+    /// Path to private input file (in TOML format)
+    private_input: Option<String>,
+
+    /// Path to public input file (in TOML format)
+    public_input: Option<String>,
+
     /// Ignored zkVMs. Values are substrings of names.
     #[arg(short, long, value_delimiter = ',', num_args = 1..)]
     ignore: Option<Vec<String>>,
@@ -36,12 +42,15 @@ static COMMAND_LOG_PATH: &str = "/tmp/output.log";
 static METRICS_TEMP_OUTPUT_PATH: &str = "/tmp/current_metrics";
 static PROOF_SIZE_FILE_PATH: &str = "/tmp/proof_size";
 
-fn run_command(zkvm_guest_command: &str, operation: &str) -> Result<std::process::Output, Error> {
+fn run_command(zkvm_guest_command: &str, operation: &str, private_input: &Option<String>, public_input: &Option<String>) -> Result<std::process::Output, Error> {
+    let inputs = vec![private_input.clone(), public_input.clone()];
+    let inputs = inputs.iter().flatten().collect::<Vec<_>>();
     Command::new("runexec")
         .args(["--no-container", "--output", COMMAND_LOG_PATH, "--"])
         .args([zkvm_guest_command, operation])
         .arg("--benchmark")
         .args(["--metrics-output", METRICS_TEMP_OUTPUT_PATH])
+        .args(inputs)
         .stdout(Stdio::piped())
         .output()
 }
@@ -153,7 +162,7 @@ fn main() {
         for operation in ["execute", "prove", "verify"] {
             println!("== {operation} {zkvm} ==");
 
-            let output = run_command(zkvm_guest_command, operation);
+            let output = run_command(zkvm_guest_command, operation, &cli.private_input, &cli.public_input);
 
             // Couldn't run runexec
             if let Err(msg) = output {
