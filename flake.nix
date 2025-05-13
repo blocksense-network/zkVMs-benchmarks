@@ -14,36 +14,26 @@
     nixpkgs.follows = "mcl-blockchain/nixpkgs";
     crane.follows = "mcl-blockchain/crane";
     fenix.follows = "mcl-blockchain/fenix";
-    # flake-utils.follows = "mcl-blockchain/flake-utils";
+    flake-parts.follows = "mcl-blockchain/flake-parts";
   };
 
-  outputs =
-    { self, nixpkgs, mcl-blockchain, mcl-blockchain-old, crane, fenix, ... }:
-    let
-      system = "x86_64-linux";
-      pkgs = import nixpkgs {
-        system = system;
-        overlays = [
-          mcl-blockchain.overlays.default
-          fenix.overlays.default
-          (_: _: {
-            metacraft-labs-old =
-              mcl-blockchain-old.legacyPackages.${system}.metacraft-labs;
-          })
-        ];
-      };
-      craneLib-default = crane.mkLib pkgs;
-      callPackage = pkgs.lib.callPackageWith pkgs;
+  outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; } {
+    systems = [
+      "x86_64-linux"
+      "aarch64-linux"
+    ];
+
+    perSystem = { inputs', pkgs, lib, system, ... }: let
+      craneLib-default = inputs.crane.mkLib pkgs;
+      callPackage = lib.callPackageWith pkgs;
 
       zkvms = builtins.attrNames
-        (pkgs.lib.filterAttrs (_: type: type == "directory")
+        (lib.filterAttrs (_: type: type == "directory")
           (builtins.readDir ./zkvms));
 
       guests = builtins.attrNames
-        (pkgs.lib.filterAttrs (_: type: type == "directory")
+        (lib.filterAttrs (_: type: type == "directory")
           (builtins.readDir ./guests));
-
-      foldr = pkgs.lib.foldr;
 
       createPackages = guestName:
         let
@@ -54,34 +44,47 @@
             inherit craneLib-default;
             zkvmLib = (import ./zkvmLib.nix) pkgs guest;
           };
-        in foldr (host: accum:
+        in lib.foldr (host: accum:
           accum // {
             "${host}${postfix}" =
               callPackage ./zkvms/${host}/default.nix args-zkVM;
           }) { } zkvms;
 
       hostPackages =
-        foldr (guest: accum: accum // (createPackages guest)) { } guests;
+        lib.foldr (guest: accum: accum // (createPackages guest)) { } guests;
 
-      guestPackages = foldr (guest: accum:
+      guestPackages = lib.foldr (guest: accum:
         accum // {
           ${guest} = callPackage ./zkvms_guest_io/default.nix {
             inherit guest;
             inherit zkvms;
             inherit hostPackages;
             inherit craneLib-default;
-            rev = self.rev or self.dirtyRev;
+            rev = inputs.self.rev or inputs.self.dirtyRev;
           };
         }) { } guests;
     in {
-      packages.${system} = hostPackages // guestPackages // {
+      _module.args.pkgs = import inputs.nixpkgs {
+        inherit system;
+        overlays = [
+          inputs.mcl-blockchain.overlays.default
+          inputs.fenix.overlays.default
+          (_: _: {
+            metacraft-labs-old =
+              inputs'.mcl-blockchain-old.legacyPackages.metacraft-labs;
+          })
+        ];
+      };
+
+      packages = hostPackages // guestPackages // {
         rust-format-all = callPackage ./rust-format-all.nix { };
         update-nix-dependencies = callPackage ./update-nix-dependencies.nix {
-          zkvms = builtins.map (name: mcl-blockchain.packages.${system}.${name})
+          zkvms = builtins.map (name: inputs.mcl-blockchain.packages.${system}.${name})
             zkvms;
         };
       };
 
-      formatter.${system} = pkgs.nixfmt;
+      formatter = pkgs.nixfmt;
     };
+  };
 }
