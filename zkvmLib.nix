@@ -13,7 +13,7 @@ let
         # are inevitable and cargo crashes when it encounters them.
         # We'll manually remove all duplicates and cargo will be happy.
         # This is a disgusting hack, but it's the best I've come up with.
-        removeDuplicates = ''
+        removeDuplicates = /* awk */ ''
           BEGIN {
               unique = 1
           }
