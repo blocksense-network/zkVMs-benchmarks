@@ -147,7 +147,7 @@ Arguments:
 
 Options:
   -i, --ignore <IGNORE>...  Ignored zkVMs. Values are substrings of names
-  -f, --fail-propagation    Make one failiure stop the entire process
+  -f, --fail-propagation    Make one failure stop the entire process
   -o, --metrics-output <METRICS_OUTPUT>
           Put the resultant output into a file of the given path
   -a, --append
