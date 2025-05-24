@@ -2418,6 +2418,10 @@
           "mcl-blockchain",
           "fenix"
         ],
+        "flake-utils": [
+          "mcl-blockchain",
+          "flake-utils"
+        ],
         "mcl-blockchain": "mcl-blockchain",
         "mcl-blockchain-old": "mcl-blockchain-old",
         "nixpkgs": [
