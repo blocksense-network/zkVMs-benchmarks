@@ -102,8 +102,24 @@
 
           devShells.default = pkgs.mkShell {
             buildInputs = with pkgs; [
-              rustup
+              (fenix.stable.withComponents [
+                "cargo"
+                "clippy"
+                "rust-src"
+                "rustc"
+                "rustfmt"
+                "rust-analyzer"
+              ])
+
+              # Possibly required system libraries by Rust crypto/networking crates
+              pkg-config
+              openssl
             ];
+
+            shellHook = ''
+              echo "zkVMs benchmarks development environment"
+              echo "Available packages: ${builtins.concatStringsSep ", " (builtins.attrNames hostPackages)}"
+            '';
           };
 
           formatter = pkgs.nixfmt-rfc-style;
