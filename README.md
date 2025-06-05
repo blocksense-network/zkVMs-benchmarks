@@ -5,6 +5,19 @@ Its ultimate goal is to deliver reproducible and accurate performance metrics ac
 
 Being made with reproducibility in mind, this project also serves as a good framework for running programs across zkVMs without the complicated and ever-changing setups required to do so.
 
+## Supported zkVMs and toolchains
+
+The [`zkvms`](./zkvms) directory contains reproducible setups for several zero-knowledge virtual machines.
+Each VM is built with a toolchain pinned via the `metacraft-labs` Nix overlay.
+Currently supported VMs are:
+
+- **Jolt** (`metacraft-labs.jolt`)
+- **Nexus** (`metacraft-labs.nexus`)
+- **RISC Zero** (`metacraft-labs.risc0`)
+- **SP1** (`metacraft-labs.sp1`)
+- **ZKM** (`metacraft-labs.zkm`)
+- **zkWasm** (`metacraft-labs.zkwasm`)
+
 ## Usage
 
 The backbones of this entire codebase are [Nix](https://nixos.org/) and Linux.
